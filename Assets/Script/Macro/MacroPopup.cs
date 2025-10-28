@@ -11,7 +11,9 @@ public class MacroPopup : MonoBehaviour
 
     [SerializeField] RectTransform macroItemParant;
 
-    private List<MacroItem> macroItemList = new List<MacroItem>();
+	[SerializeField] MainController mainController;
+
+	private List<MacroItem> macroItemList = new List<MacroItem>();
 
     private void Awake()
     {
@@ -50,10 +52,7 @@ public class MacroPopup : MonoBehaviour
 
     public void CopyEventOn(MacroItem macroItem)
     {
-        GUIUtility.systemCopyBuffer = macroItem.macroData.contens;
-
-        string warningMessage = $"{macroItem.macroData.title} 복사 완료";
-        PopupManager.Instance.WarningPopupCreate(warningMessage);
+        mainController.CopyToMacroTextOn(macroItem);
     }
 
     public void ChangeEventOn(MacroItem macroItem)
