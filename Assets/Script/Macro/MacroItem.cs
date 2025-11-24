@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class MacroItem : MonoBehaviour
 {
@@ -19,22 +20,109 @@ public class MacroItem : MonoBehaviour
     public UnityAction<MacroItem> ChangeEventOn = data => { };
     public UnityAction<MacroItem> DeleteEventOn = data => { };
 
-    // Start is called before the first frame update
-    void Start()
+    private ScrollRect scrollRect;
+
+    private bool dragOn = false;
+	private bool longClickCheckOn = false;
+    private float longClickDelay = 0;
+	private float longClickCheckDelay = 1.5f;
+	private bool longClickOn = false;
+
+	// Start is called before the first frame update
+	void Start()
     {
         InputDataChangeOn();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Init(ScrollRect scrollRect , float setWidth)
     {
-        
+		this.scrollRect = scrollRect;
+
+		RectTransform rect = transform as RectTransform;
+		Vector2 sizeDelta = rect.sizeDelta;
+		sizeDelta.x = setWidth;
+		rect.sizeDelta = sizeDelta;
+
+        SetEvent();
+	}
+
+	void SetEvent()
+	{
+		EventTrigger eventTrigger = gameObject.AddComponent<EventTrigger>();
+
+		AddEvent(eventTrigger, EventTriggerType.BeginDrag,      (data) => OnBeginDrag((PointerEventData)data));
+		AddEvent(eventTrigger, EventTriggerType.Drag,           (data) => OnDrag((PointerEventData)data));
+		AddEvent(eventTrigger, EventTriggerType.EndDrag,        (data) => OnEndDrag((PointerEventData)data));
+		AddEvent(eventTrigger, EventTriggerType.PointerClick,   (data) => OnClick((PointerEventData)data));
+		AddEvent(eventTrigger, EventTriggerType.PointerDown,    (data) => OnPointerDown((PointerEventData)data));
+		AddEvent(eventTrigger, EventTriggerType.PointerUp,      (data) => OnPointerUp((PointerEventData)data));
+	}
+
+	private void AddEvent(EventTrigger trigger, EventTriggerType eventType, System.Action<BaseEventData> action)
+	{
+		EventTrigger.Entry entry = new EventTrigger.Entry();
+		entry.eventID = eventType;
+		entry.callback.AddListener(action.Invoke);
+		trigger.triggers.Add(entry);
+	}
+
+	private void OnBeginDrag(PointerEventData eventData)
+	{
+		dragOn = true;
+
+		scrollRect.OnBeginDrag(eventData);
+	}
+	private void OnDrag(PointerEventData eventData)
+	{
+		longClickDelay = longClickCheckDelay;
+		scrollRect.OnDrag(eventData);
+	}
+
+	private void OnEndDrag(PointerEventData eventData)
+	{
+		dragOn = false;
+
+		scrollRect.OnEndDrag(eventData);
+	}
+	private void OnClick(PointerEventData eventData)
+	{
+        if (dragOn == false && longClickOn == false)
+        {
+			CopyBtnClick();
+		}
+	}
+	private void OnPointerDown(PointerEventData eventData)
+	{
+        longClickOn = false;
+		longClickCheckOn = true;
+        longClickDelay = longClickCheckDelay;
+	}
+	private void OnPointerUp(PointerEventData eventData)
+	{
+		longClickCheckOn = false;
+        longClickOn = false;
+	}
+
+
+	// Update is called once per frame
+	void Update()
+    {
+        if (longClickCheckOn)
+        {
+            longClickDelay -= Time.deltaTime;
+
+            if (longClickDelay < 0)
+            {
+                longClickOn = true;
+                ChangeBtnClick();
+			}
+		}
     }
 
     public void SetData(MacroData macroData)
     {
         this.macroData = macroData;
-    }
+	}
 
     public void CopyBtnClick()
     {

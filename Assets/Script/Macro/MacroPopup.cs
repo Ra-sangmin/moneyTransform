@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MacroPopup : MonoBehaviour
 {
@@ -13,9 +14,13 @@ public class MacroPopup : MonoBehaviour
 
 	[SerializeField] MainController mainController;
 
+	[SerializeField] ScrollRect scrollRect;
+
 	private List<MacroItem> macroItemList = new List<MacroItem>();
 
-    private void Awake()
+    private MacroItem currentChangeMacroItem;
+
+	private void Awake()
     {
         SetEvent();
     }
@@ -62,7 +67,22 @@ public class MacroPopup : MonoBehaviour
         SetMacroItem();
     }
 
-    public void DeleteEventOn(MacroItem macroItem)
+	public void ChangeEndOn()
+	{
+		macroChagnePopup.gameObject.SetActive(false);
+
+        if (currentChangeMacroItem == null || currentChangeMacroItem.macroData == null)
+            return;
+
+        MacroData macroData = currentChangeMacroItem.macroData;
+
+		if (string.IsNullOrEmpty(macroData.title) && string.IsNullOrEmpty(macroData.contens))
+        {
+			currentChangeMacroItem.DeleteBtnClick();
+		}
+	}
+
+	public void DeleteEventOn(MacroItem macroItem)
     {
         MacroManager.Instance.DeleteMacroData(macroItem.macroData);
         SetMacroItem();
@@ -85,11 +105,15 @@ public class MacroPopup : MonoBehaviour
 
         if (macroItemList.Count <= macroDataList.Count)
         {
-            for (int i = macroItemList.Count; i < macroDataList.Count; i++)
+            float setXValue = (macroItemParant.parent.parent as RectTransform).rect.width;
+
+			for (int i = macroItemList.Count; i < macroDataList.Count; i++)
             {
                 MacroItem macroItem = Instantiate(macroItemPrefab, macroItemParant);
 
-                AddMacroEventOn(macroItem);
+                macroItem.Init(scrollRect, setXValue);
+
+				AddMacroEventOn(macroItem);
 
                 macroItemList.Add(macroItem);
             }
@@ -109,12 +133,12 @@ public class MacroPopup : MonoBehaviour
 
     public void AddDataClickOn()
     {
-        MacroData macroData = MacroManager.Instance.AddMacroData();
+		MacroData macroData = MacroManager.Instance.AddMacroData();
         SetMacroItem();
 
-        MacroItem macroItem = macroItemList.FirstOrDefault(data => data.macroData == macroData);
+		currentChangeMacroItem = macroItemList.FirstOrDefault(data => data.macroData == macroData);
 
-        ChangeEventOn(macroItem);
+        ChangeEventOn(currentChangeMacroItem);
     }
 
     // Update is called once per frame
