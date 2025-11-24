@@ -701,6 +701,7 @@ PlayerSettings:
   scriptingDefineSymbols:
     1: CT_FB
     4: CT_FB
+    7: CT_FB
     13: CT_FB
   additionalCompilerArguments: {}
   platformArchitecture: {}
@@ -719,6 +720,7 @@ PlayerSettings:
   assemblyVersionValidation: 1
   gcWBarrierValidation: 0
   apiCompatibilityLevelPerPlatform:
+    Android: 3
     Standalone: 3
     WebGL: 3
     iPhone: 3

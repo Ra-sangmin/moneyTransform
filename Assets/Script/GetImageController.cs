@@ -7,9 +7,10 @@ using UnityEngine.UI;
 public class GetImageController : MonoBehaviour
 {
     [SerializeField] private List<RawImage> imageList = new List<RawImage>();
-    //[SerializeField] private RawImage image;
+    [SerializeField] private RectTransform parant;
+	//[SerializeField] private RawImage image;
 
-    public float maxHeight;
+	public float maxHeight;
 
     private string imagePath;
     private string imagePathKey;
@@ -33,7 +34,7 @@ public class GetImageController : MonoBehaviour
 
         if (imagePath != string.Empty)
         {
-            LoadImageAtPath(imagePath);
+            LoadImageAtPath(imagePath , true);
         }
     }
 
@@ -45,11 +46,11 @@ public class GetImageController : MonoBehaviour
         }, "Select a PNG image", "image/png");
     }
 
-    public void LoadImageAtPath(string path )
+    public void LoadImageAtPath(string path , bool forceOn = false)
     {
         if (path != null)
         {
-            Texture2D texture = NativeGallery.LoadImageAtPath(path, 1024);
+            Texture2D texture = NativeGallery.LoadImageAtPath(path, 1080);
             if (texture == null)
             {
                 Debug.Log("Couldn't load texture from " + path);
@@ -57,16 +58,39 @@ public class GetImageController : MonoBehaviour
             }
             else 
             {
-                string fileName = Path.GetFileName(path);
-                string fullPath = path;
-                PickTextureData data = new PickTextureData(texture, fileName, fullPath);
+                if (forceOn == false)
+                {
+					ImageCropper newImageCropper = Instantiate(Resources.Load<ImageCropper>("ImageCropper"), parant);
+					newImageCropper.OriginTexSet(texture);
 
-                SetTexture(data);
+					newImageCropper.resultOn += cropData =>
+					{
+                        DataSet(cropData.texture2D, cropData.path);
+						//ResultOn(resultTex);
+						Destroy(newImageCropper.gameObject);
+					};
+				}
+                else
+                {
+                    DataSet(texture, path);
+				}
             }
         }
     }
 
-    public void SetTexture(PickTextureData result)
+    private void DataSet(Texture2D texture, string path)
+    {
+        string fileName = Path.GetFileName(path);
+        string fullPath = path;
+
+        Debug.LogWarning(fullPath);
+
+        PickTextureData data = new PickTextureData(texture, fileName, fullPath);
+
+        SetTexture(data);
+    }
+
+	public void SetTexture(PickTextureData result)
     {
         if (result != null && result.texture != null)
         {
@@ -77,12 +101,9 @@ public class GetImageController : MonoBehaviour
 
             float maxWidth = result.texture.width * maxHeight / result.texture.height;
 
-            Debug.LogWarning(maxHeight);
-
-
             foreach(var image in imageList)
             {
-               image.rectTransform.sizeDelta = new Vector2(maxWidth,maxHeight);
+               //image.rectTransform.sizeDelta = new Vector2(maxWidth,maxHeight);
                 image.texture = result.texture;
             }
         }
