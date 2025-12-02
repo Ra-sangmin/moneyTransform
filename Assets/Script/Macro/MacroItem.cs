@@ -9,12 +9,9 @@ public class MacroItem : MonoBehaviour
 {
     [SerializeField] Text titleText;
     [SerializeField] Text contensText;
+	[SerializeField] RectTransform moveItem;
 
-    ////public int index = 0;
-    //public string titleStr;
-    //public string contensStr;
-
-    public MacroData macroData;
+	public MacroData macroData;
 
     public UnityAction<MacroItem> CopyEventOn = data  => { };
     public UnityAction<MacroItem> ChangeEventOn = data => { };
@@ -23,10 +20,19 @@ public class MacroItem : MonoBehaviour
     private ScrollRect scrollRect;
 
     private bool dragOn = false;
-	private bool longClickCheckOn = false;
-    private float longClickDelay = 0;
-	private float longClickCheckDelay = 1.5f;
-	private bool longClickOn = false;
+
+	private Vector2 startPos = Vector2.zero;
+
+	public enum DirectionEnum
+	{
+		None,
+		/// <summary> 세로 </summary>
+		Vertical,
+		/// <summary> 가로 </summary>
+		Horizontal, 
+	}
+
+	private DirectionEnum directionEnum = DirectionEnum.None;
 
 	// Start is called before the first frame update
 	void Start()
@@ -71,52 +77,104 @@ public class MacroItem : MonoBehaviour
 		dragOn = true;
 
 		scrollRect.OnBeginDrag(eventData);
+
+		startPos = eventData.position;
 	}
 	private void OnDrag(PointerEventData eventData)
 	{
-		longClickDelay = longClickCheckDelay;
-		scrollRect.OnDrag(eventData);
+		if (directionEnum == DirectionEnum.None) 
+		{
+			CheckDirection(eventData);
+			return;
+		}
+
+		if (directionEnum == DirectionEnum.Vertical)
+		{
+			scrollRect.OnDrag(eventData);
+		}
+		else if (directionEnum == DirectionEnum.Horizontal)
+		{
+			MoveItemAddPos(eventData);
+		}
+	}
+
+	private void CheckDirection(PointerEventData eventData)
+	{
+		Vector2 diff = eventData.position - startPos;
+
+		float checkXValue = Mathf.Abs(diff.x);
+		float checkYValue = Mathf.Abs(diff.y);
+
+		if (checkXValue > checkYValue && checkXValue > 10 && checkYValue < 3)
+		{
+			directionEnum = DirectionEnum.Horizontal;
+		}
+		else if (checkXValue < checkYValue && checkYValue > 10)
+		{
+			directionEnum = DirectionEnum.Vertical;
+		}
+	}
+
+	private void MoveItemAddPos(PointerEventData eventData)
+	{
+		Vector3 currentPos = moveItem.anchoredPosition3D;
+		currentPos.x += eventData.delta.x;
+		currentPos.x = Mathf.Clamp(currentPos.x, -550, 550);
+		moveItem.anchoredPosition3D = currentPos;
 	}
 
 	private void OnEndDrag(PointerEventData eventData)
 	{
 		dragOn = false;
 
+		DirectionEnumResultOn();
+
 		scrollRect.OnEndDrag(eventData);
 	}
+
+	private void DirectionEnumResultOn()
+	{
+		if (directionEnum == DirectionEnum.Horizontal) 
+		{
+			float posX = moveItem.anchoredPosition3D.x;
+
+			if (posX > 500)
+			{
+				ChangeBtnClick();
+			}
+			else if (posX < -500)
+			{
+				DeleteBtnClick();
+			}
+
+			moveItem.anchoredPosition3D = Vector3.zero;
+		}
+
+
+		directionEnum = DirectionEnum.None;
+	}
+
+
 	private void OnClick(PointerEventData eventData)
 	{
-        if (dragOn == false && longClickOn == false)
+        if (dragOn == false )
         {
 			CopyBtnClick();
 		}
 	}
 	private void OnPointerDown(PointerEventData eventData)
 	{
-        longClickOn = false;
-		longClickCheckOn = true;
-        longClickDelay = longClickCheckDelay;
+		directionEnum = DirectionEnum.None;
+		moveItem.anchoredPosition3D = Vector3.zero;
 	}
 	private void OnPointerUp(PointerEventData eventData)
 	{
-		longClickCheckOn = false;
-        longClickOn = false;
 	}
 
 
 	// Update is called once per frame
 	void Update()
     {
-        if (longClickCheckOn)
-        {
-            longClickDelay -= Time.deltaTime;
-
-            if (longClickDelay < 0)
-            {
-                longClickOn = true;
-                ChangeBtnClick();
-			}
-		}
     }
 
     public void SetData(MacroData macroData)
