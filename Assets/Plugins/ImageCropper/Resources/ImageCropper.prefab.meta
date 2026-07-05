@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: c3ec8097647d9e54daa56be589f9a12b
+timeCreated: 1523020550
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116650
+  packageName: Image Cropper
+  packageVersion: 1.0.8
+  assetPath: Assets/Plugins/ImageCropper/Resources/ImageCropper.prefab
+  uploadId: 841280

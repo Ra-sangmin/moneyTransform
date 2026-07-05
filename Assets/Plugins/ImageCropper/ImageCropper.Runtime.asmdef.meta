@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 58b8905714dedd04693f1fb3fd955437
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116650
+  packageName: Image Cropper
+  packageVersion: 1.0.8
+  assetPath: Assets/Plugins/ImageCropper/ImageCropper.Runtime.asmdef
+  uploadId: 841280

@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 5a39d7b3bb056d340842cf64a2bdf500
+timeCreated: 1658741613
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116650
+  packageName: Image Cropper
+  packageVersion: 1.0.8
+  assetPath: Assets/Plugins/ImageCropper/Scripts/EventSystemHandler.cs
+  uploadId: 841280

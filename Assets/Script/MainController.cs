@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 public class MainController : MonoBehaviour {
 
 	/// <summary> 환률 정보 URL </summary>
-	private	string url = "https://finance.naver.com/marketindex/exchangeDetail.nhn?marketindexCd=FX_JPYKRW";
+	private string url = "https://finance.naver.com/marketindex/exchangeDetail.nhn?marketindexCd=FX_JPYKRW";
+
 	/// <summary> 현재 환률 </summary>
 	private float exchangeRate = 0;
 	/// <summary> 현재 환률 Text </summary>
@@ -71,56 +75,79 @@ public class MainController : MonoBehaviour {
 	/// </summary>
 	void TimeOn()
 	{
-		ResetExchangeRate ();
+		ResetExchangeRate();
     }
 
 	/// <summary>
 	/// 환률 리셋
 	/// </summary>
-	public void ResetExchangeRate()
+	public async void ResetExchangeRate()
 	{
-		StartCoroutine (GetExchangeRate ());
+		string htmlText = await GetHtmlText();
+
+		SetExchangeRate(htmlText);
 	}
 
-	/// <summary>
-	/// 환률 리셋
-	/// </summary>
-	IEnumerator GetExchangeRate()
+	private async Task<string> GetHtmlText()
 	{
-		WWW www = new WWW (url);
+		string resultValue = string.Empty;
+		
+		using (UnityWebRequest request = UnityWebRequest.Get(url))
+		{
+			// 봇 차단 방지용 헤더 위장
+			request.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
-		yield return www;
+			// 통신 요청을 보내고 진행 상태를 변수에 담습니다.
+			var operation = request.SendWebRequest();
 
-		int seachIndex = www.text.LastIndexOf ("JPY<");
-		int startIndex = 0;
-		for (int i = seachIndex; i >= 0; i--) {
-
-			if(www.text[i] == '<')
+			// 통신이 완료될 때까지 메인 스레드를 멈추지 않고 비동기 대기합니다.
+			while (!operation.isDone)
 			{
-				startIndex = i;
-				break;
+				await Task.Yield();
+			}
+
+			if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+			{
+				Debug.LogError($"통신 에러: {request.error}");
+			}
+			else
+			{
+				resultValue = request.downloadHandler.text;
+			}
+
+			return resultValue;
+		}
+	}
+
+	private void SetExchangeRate(string resultValue)
+	{
+		if (string.IsNullOrEmpty(resultValue))
+			return;
+
+		// <option value="9.481" label="100" class="selectbox-default" selected="selected"> 일본 엔 JPY</option> 
+		// 위 로직을 찾음
+		// 핵심: 정규식으로 정확히 타겟팅
+		Match match = Regex.Match(resultValue, @"<option\s+value=""([\d.]+)""[^>]*>[^<]*JPY\s*</option>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+		if (match.Success)
+		{
+			string rateStr = match.Groups[1].Value;
+
+			if (float.TryParse(rateStr, out float rawRate))
+			{
+				exchangeRate = rawRate;
+				//환률 Text 변경
+				exchangeRateText.text = (exchangeRate * 100).ToString();
+			}
+			else
+			{
+				Debug.LogError("환율 숫자 변환 실패. 추출된 문자열: " + rateStr);
 			}
 		}
-
-		int lastIndex = www.text.IndexOf('>',startIndex);
-
-		string subStrText = www.text.Substring (startIndex, (lastIndex +1 - startIndex));
-
-		int exchangeRateStartIndex = subStrText.IndexOf ('"');
-		int exchangeRateLastIndex = subStrText.IndexOf ('"',exchangeRateStartIndex+1);
-
-		string exchangeRateStr = subStrText.Substring (exchangeRateStartIndex+1, (exchangeRateLastIndex - (exchangeRateStartIndex+1)));
-		exchangeRate = float.Parse (exchangeRateStr);
-
-		SetExchangeRateText ();
-	}
-
-	/// <summary>
-	/// 환률 Text 변경
-	/// </summary>
-	void SetExchangeRateText()
-	{
-		exchangeRateText.text = (exchangeRate*100).ToString();
+		else
+		{
+			Debug.LogError("HTML에서 JPY 옵션 태그를 찾지 못했습니다.");
+		}
 	}
 
 	public void PaymentValueReset()

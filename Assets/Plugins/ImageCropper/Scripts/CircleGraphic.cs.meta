@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 713600372b4defb458fcaf7bb47fedbc
+timeCreated: 1523363091
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116650
+  packageName: Image Cropper
+  packageVersion: 1.0.8
+  assetPath: Assets/Plugins/ImageCropper/Scripts/CircleGraphic.cs
+  uploadId: 841280

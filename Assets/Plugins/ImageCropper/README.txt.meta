@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f2524c1e4c1b07d4892037793e8a9404
+timeCreated: 1563307881
+licenseType: Store
+TextScriptImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116650
+  packageName: Image Cropper
+  packageVersion: 1.0.8
+  assetPath: Assets/Plugins/ImageCropper/README.txt
+  uploadId: 841280

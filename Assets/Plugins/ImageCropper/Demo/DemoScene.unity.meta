@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c9c3a8b1d560a0146b500a8fc3b06487
+timeCreated: 1523817215
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116650
+  packageName: Image Cropper
+  packageVersion: 1.0.8
+  assetPath: Assets/Plugins/ImageCropper/Demo/DemoScene.unity
+  uploadId: 841280
