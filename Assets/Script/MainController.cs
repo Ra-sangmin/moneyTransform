@@ -90,7 +90,7 @@ public class MainController : MonoBehaviour {
 
 	private async Task<string> GetHtmlText()
 	{
-		string resultValue = string.Empty;
+		string htmlText = string.Empty;
 		
 		using (UnityWebRequest request = UnityWebRequest.Get(url))
 		{
@@ -112,22 +112,37 @@ public class MainController : MonoBehaviour {
 			}
 			else
 			{
-				resultValue = request.downloadHandler.text;
+				htmlText = request.downloadHandler.text;
 			}
 
-			return resultValue;
+			return htmlText;
 		}
 	}
 
-	private void SetExchangeRate(string resultValue)
+	private void SetExchangeRate(string htmlText)
 	{
-		if (string.IsNullOrEmpty(resultValue))
+		if (string.IsNullOrEmpty(htmlText))
 			return;
 
-		// <option value="9.481" label="100" class="selectbox-default" selected="selected"> 일본 엔 JPY</option> 
-		// 위 로직을 찾음
-		// 핵심: 정규식으로 정확히 타겟팅
-		Match match = Regex.Match(resultValue, @"<option\s+value=""([\d.]+)""[^>]*>[^<]*JPY\s*</option>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+		// <option value="9.481" label="100" class="selectbox-default" selected="selected"> 일본 엔 JPY</option>  이부분을 취득
+		string tagStart = @"<option\s+value=""";
+
+		// 2. 💡 우리가 추출할 핵심 데이터 (숫자와 소수점 캡처 그룹)
+		string targetValue = @"([\d.]+)";
+
+		// 3. 태그 닫힘 방어막 (value 따옴표를 닫고, > 기호가 나올 때까지 다른 속성 무시)
+		string tagRemainder = @"""[^>]*>";
+
+		// 4. 내부 텍스트 방어막 (다른 통화 침범을 막고 JPY 글자 확인)
+		string innerText = @"[^<]*JPY\s*";
+
+		// 5. 닫는 태그
+		string tagEnd = @"</option>";
+
+		// 6. 분리된 변수들을 하나로 합쳐서 최종 패턴 생성
+		string pattern = $@"{tagStart}{targetValue}{tagRemainder}{innerText}{tagEnd}";
+
+		Match match = Regex.Match(htmlText, pattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
 		if (match.Success)
 		{
