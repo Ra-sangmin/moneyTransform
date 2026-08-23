@@ -30,12 +30,16 @@ public class GetImageController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        imagePath = PlayerPrefs.GetString(imagePathKey,string.Empty);
+		string savedFileName = PlayerPrefs.GetString(imagePathKey, string.Empty);
 
-        if (imagePath != string.Empty)
-        {
-            LoadImageAtPath(imagePath , true);
-        }
+		if (savedFileName != string.Empty)
+		{
+			// 2. 현재 시점의 안전한 로컬 저장 폴더 경로와 파일 이름을 합쳐 진짜 경로를 만듭니다.
+			string currentFullPath = Path.Combine(Application.persistentDataPath, savedFileName);
+
+			// 3. 조립된 경로로 이미지를 불러옵니다.
+			LoadImageAtPath(currentFullPath, true);
+		}
     }
 
     public void PickImage()
@@ -117,7 +121,9 @@ public class GetImageController : MonoBehaviour
 		if (result != null && result.texture != null)
 		{
 			imagePath = result.fullPath;
-			PlayerPrefs.SetString(imagePathKey, result.fullPath);
+
+			// 🚨 수정: 전체 경로(fullPath)가 아닌 파일 이름(fileName)만 저장합니다!
+			PlayerPrefs.SetString(imagePathKey, result.fileName);
 			PlayerPrefs.Save();
 
 			// 1. 가로로 자연스럽게 이어지도록 반복(Repeat) 설정
