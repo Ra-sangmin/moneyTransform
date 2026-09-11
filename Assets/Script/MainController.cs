@@ -1,17 +1,35 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-public class MainController : MonoBehaviour {
+[System.Serializable]
+public class EstimateResponseWrapper
+{
+	public bool success;
+	public ExchangeOnlyData data;
+}
 
-	/// <summary> 환률 정보 URL </summary>
-	private string url = "https://finance.naver.com/marketindex/exchangeDetail.nhn?marketindexCd=FX_JPYKRW";
+[System.Serializable]
+public class ExchangeOnlyData
+{
+	public float baseExchangeRate;
+	public float additionalRate;
+	public int rateBasisUnit;
+	public float finalDisplayRate;
+	public bool exchangeRateFetchFailed;
+}
 
-	/// <summary> 현재 환률 </summary>
+public class MainController : MonoBehaviour
+{
+
+	/// <summary> 홈페이지 서버의 환율/견적 API URL </summary>
+	private string apiUrl = "http://www.mikushop.co.kr/api/estimate";
+
+	/// <summary> 현재 환율 (1엔 기준 또는 계산에 쓰이는 최종 기준 환율) </summary>
 	private float exchangeRate = 0;
 	/// <summary> 현재 환률 Text </summary>
 	[SerializeField] private Text exchangeRateText;
@@ -37,25 +55,25 @@ public class MainController : MonoBehaviour {
 	/// <summary> 대행 수수료 Text </summary>
 	[SerializeField] private Text texCountText;
 
-    /// <summary> 합계 계산 공식 알림 Text </summary>
-    [SerializeField] private Text resultExDoingText;
-    /// <summary> 합계 계산 공식 Text </summary>
-    [SerializeField] private Text resultDoingText;
+	/// <summary> 합계 계산 공식 알림 Text </summary>
+	[SerializeField] private Text resultExDoingText;
+	/// <summary> 합계 계산 공식 Text </summary>
+	[SerializeField] private Text resultDoingText;
 	/// <summary> 합계 Text </summary>
 	[SerializeField] private Text resultCountText;
-    /// <summary> 합계 값 </summary>
-    private float resultCount;
+	/// <summary> 합계 값 </summary>
+	private float resultCount;
 
-    /// <summary> 시간 관리 메니져 </summary>
-    [SerializeField] private TimeController timeController;
-	
+	/// <summary> 시간 관리 메니져 </summary>
+	[SerializeField] private TimeController timeController;
+
 	[SerializeField] GetImageController getImageController;
 
 	List<string> replaceStrList = new List<string>();
 
 	// Use this for initialization
-	void Start () {
-
+	void Start()
+	{
 		timeController.timeOn += TimeOn;
 
 		PopupManager.Instance.SetCanvasParant(transform);
@@ -76,109 +94,82 @@ public class MainController : MonoBehaviour {
 	void TimeOn()
 	{
 		ResetExchangeRate();
-    }
-
-	/// <summary>
-	/// 환률 리셋
-	/// </summary>
-	public async void ResetExchangeRate()
-	{
-		string htmlText = await GetHtmlText();
-
-		SetExchangeRate(htmlText);
 	}
 
-	private async Task<string> GetHtmlText()
+	/// <summary>
+	/// 환율 리셋 (홈페이지 서버 API 호출 방식으로 변경)
+	/// </summary>
+	public void ResetExchangeRate()
 	{
-		string htmlText = string.Empty;
-		
-		using (UnityWebRequest request = UnityWebRequest.Get(url))
+		StartCoroutine(GetExchangeRateFromServer());
+	}
+
+	IEnumerator GetExchangeRateFromServer()
+	{
+		using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
 		{
-			// 봇 차단 방지용 헤더 위장
-			request.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-
-			// 통신 요청을 보내고 진행 상태를 변수에 담습니다.
-			var operation = request.SendWebRequest();
-
-			// 통신이 완료될 때까지 메인 스레드를 멈추지 않고 비동기 대기합니다.
-			while (!operation.isDone)
-			{
-				await Task.Yield();
-			}
+			yield return request.SendWebRequest();
 
 			if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
 			{
-				Debug.LogError($"통신 에러: {request.error}");
+				Debug.LogError($"서버 통신 에러: {request.error}");
 			}
 			else
 			{
-				htmlText = request.downloadHandler.text;
+				string jsonResponse = request.downloadHandler.text;
+				try
+				{
+					EstimateResponseWrapper res = JsonUtility.FromJson<EstimateResponseWrapper>(jsonResponse);
+					if (res != null && res.success)
+					{
+						// 서버에서 계산해둔 baseExchangeRate (또는 필요에 따라 finalDisplayRate 활용 가능)
+						// 기존 로직이 (현재 환율 + 추가금액) 형태로 계산하므로 baseExchangeRate를 대입합니다.
+						exchangeRate = res.data.baseExchangeRate;
+
+						// 서버에 설정된 추가 증가액이 있다면 input에도 동기화 (원하는 경우 주석 해제)
+						// if (addRateInput != null && string.IsNullOrEmpty(addRateInput.text))
+						// {
+						//     addRateInput.text = (res.data.additionalRate * res.data.rateBasisUnit).ToString();
+						// }
+
+						if (exchangeRateText != null)
+						{
+							// 화면에 표시할 때는 기준 단위(예: 100엔 기준 최종 환율)를 보여줄 수도 있습니다.
+							exchangeRateText.text = res.data.finalDisplayRate.ToString();
+						}
+
+						Debug.Log($"서버 환율 갱신 성공: 기본환율({exchangeRate}), 최종표시환율({res.data.finalDisplayRate})");
+
+						// 환율이 갱신된 후 자동으로 견적 재계산 수행
+						CalculationBtn();
+					}
+					else
+					{
+						Debug.LogError("서버에서 환율 데이터를 정상적으로 반환하지 않았습니다.");
+					}
+				}
+				catch (Exception e)
+				{
+					Debug.LogError($"JSON 파싱 에러: {e.Message}");
+				}
 			}
-
-			return htmlText;
-		}
-	}
-
-	private void SetExchangeRate(string htmlText)
-	{
-		if (string.IsNullOrEmpty(htmlText))
-			return;
-
-		// <option value="9.481" label="100" class="selectbox-default" selected="selected"> 일본 엔 JPY</option>  이부분을 취득
-		string tagStart = @"<option\s+value=""";
-
-		// 2. 💡 우리가 추출할 핵심 데이터 (숫자와 소수점 캡처 그룹)
-		string targetValue = @"([\d.]+)";
-
-		// 3. 태그 닫힘 방어막 (value 따옴표를 닫고, > 기호가 나올 때까지 다른 속성 무시)
-		string tagRemainder = @"""[^>]*>";
-
-		// 4. 내부 텍스트 방어막 (다른 통화 침범을 막고 JPY 글자 확인)
-		string innerText = @"[^<]*JPY\s*";
-
-		// 5. 닫는 태그
-		string tagEnd = @"</option>";
-
-		// 6. 분리된 변수들을 하나로 합쳐서 최종 패턴 생성
-		string pattern = $@"{tagStart}{targetValue}{tagRemainder}{innerText}{tagEnd}";
-
-		Match match = Regex.Match(htmlText, pattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-		if (match.Success)
-		{
-			string rateStr = match.Groups[1].Value;
-
-			if (float.TryParse(rateStr, out float rawRate))
-			{
-				exchangeRate = rawRate;
-				//환률 Text 변경
-				exchangeRateText.text = (exchangeRate * 100).ToString();
-			}
-			else
-			{
-				Debug.LogError("환율 숫자 변환 실패. 추출된 문자열: " + rateStr);
-			}
-		}
-		else
-		{
-			Debug.LogError("HTML에서 JPY 옵션 태그를 찾지 못했습니다.");
 		}
 	}
 
 	public void PaymentValueReset()
 	{
-		if (string.IsNullOrEmpty(salePriceInput.text)) 
+		if (string.IsNullOrEmpty(salePriceInput.text))
 		{
-            paymentInput.text = null;
-            return;
-        }
-	
+			paymentInput.text = null;
+			return;
+		}
+
 		int salePrice = int.Parse(salePriceInput.text);
 
 		if (salePrice == 0)
 		{
-            paymentInput.text = null;
-            return;
+			paymentInput.text = null;
+			return;
 		}
 
 		int payment = salePrice == 0 ? 0 :
@@ -194,7 +185,7 @@ public class MainController : MonoBehaviour {
 	public void QuantityCountUp()
 	{
 		quantityCount++;
-		QuantityCountReset ();
+		QuantityCountReset();
 	}
 
 	/// <summary>
@@ -204,12 +195,12 @@ public class MainController : MonoBehaviour {
 	{
 		quantityCount--;
 
-		if(quantityCount < 0)
+		if (quantityCount < 0)
 		{
 			quantityCount = 0;
 		}
 
-		QuantityCountReset ();
+		QuantityCountReset();
 	}
 
 	/// <summary>
@@ -218,7 +209,7 @@ public class MainController : MonoBehaviour {
 	void QuantityCountReset()
 	{
 		quantityCountText.text = quantityCount.ToString();
-		TexCountReset ();
+		TexCountReset();
 
 		CalculationBtn();
 	}
@@ -228,15 +219,15 @@ public class MainController : MonoBehaviour {
 	/// </summary>
 	void TexCountReset()
 	{
-		texCount = 	quantityCount == 0 ? 0 : 
+		texCount = quantityCount == 0 ? 0 :
 					quantityCount < 4 ? texCount = 300 : quantityCount * 100;
 		texCountText.text = texCount.ToString();
 	}
 
-    /// <summary>
-    /// 계산시작 버튼 클릭시 호출
-    /// </summary>
-    public void CalculationBtn()
+	/// <summary>
+	/// 계산시작 버튼 클릭시 호출
+	/// </summary>
+	public void CalculationBtn()
 	{
 		float addRate = addRateInput.text != string.Empty ? float.Parse(addRateInput.text) : 0;
 		addRate *= 0.01f;
@@ -247,59 +238,45 @@ public class MainController : MonoBehaviour {
 		float dailyTax = dailyTaxInput.text != string.Empty ? float.Parse(dailyTaxInput.text) : 0;
 
 		string resultDoingStr = string.Format("( {0} + {1} ) X ({2:n0} + {3} + {4} + {5})", exchangeRate, addRate, salePrice, payment, dailyTax, texCount);
-		resultDoingText.text = resultDoingStr;
+		if (resultDoingText != null) resultDoingText.text = resultDoingStr;
+
 		//최종 계산 = ( 현재 환률 + 추가 금액 ) * ( 상품 가격 + 결제수수료 + 일내배송료 + 대행 수수료 )
 		resultCount = ((exchangeRate + addRate) * (salePrice + payment + dailyTax + texCount));
 
 		resultCount = Mathf.CeilToInt(resultCount * 0.1f) * 10;
 
-		resultCountText.text = string.Format("{0:n0}원", resultCount);
+		if (resultCountText != null) resultCountText.text = string.Format("{0:n0}원", resultCount);
 	}
 
-#if (UNITY_ANDROID && !UNITY_EDITOR)
-
-	//void OnTest()
-	//{
-	//	AndroidNativePluginLibrary.Instance.OpenGallary();
-	//}
-
-	//private void OnSuccess(string path)
-	//{
-	//	AndroidNativePluginLibrary.Instance.ShowToast("File Selected:" + path);
-	//	getImageController.SetTexture(path);
-	//}
-
-#endif
-
-	
 	// Update is called once per frame
-	void Update () {
-    }
+	void Update()
+	{
+	}
 
-    public void CopyToResult()
-    {
-        GUIUtility.systemCopyBuffer = resultCountText.text;
+	public void CopyToResult()
+	{
+		GUIUtility.systemCopyBuffer = resultCountText.text;
 
 		string warningMessage = $"{resultCountText.text} 복사 완료";
-        PopupManager.Instance.WarningPopupCreate(warningMessage);
-    }
+		PopupManager.Instance.WarningPopupCreate(warningMessage);
+	}
 
-    public void CopyToText(int index)
-    {
+	public void CopyToText(int index)
+	{
 		Debug.LogWarning(index);
 
-        GUIUtility.systemCopyBuffer = resultCount.ToString("n0");
-    }
+		GUIUtility.systemCopyBuffer = resultCount.ToString("n0");
+	}
 
-    public void CopyToClipboard(string str)
-    {
-        GUIUtility.systemCopyBuffer = str;
-    }
+	public void CopyToClipboard(string str)
+	{
+		GUIUtility.systemCopyBuffer = str;
+	}
 
-    public void CopyToTextPopupOn()
-    {
-        
-    }
+	public void CopyToTextPopupOn()
+	{
+
+	}
 
 	public void CopyToMacroTextOn(MacroItem macroItem)
 	{
@@ -317,12 +294,12 @@ public class MainController : MonoBehaviour {
 			switch (replaceStr)
 			{
 				case "{상품가격}":
-					inputField = salePriceInput; 
+					inputField = salePriceInput;
 					break;
-				case "{결제수수료}":	
+				case "{결제수수료}":
 					inputField = paymentInput;
 					break;
-				case "{합계}":			
+				case "{합계}":
 					setValue = resultCount;
 					break;
 				case "{추가문구1}":
@@ -352,5 +329,4 @@ public class MainController : MonoBehaviour {
 		string warningMessage = $"{macroItem.macroData.title} 복사 완료";
 		PopupManager.Instance.WarningPopupCreate(warningMessage);
 	}
-
 }
