@@ -28,6 +28,7 @@ public class MainController : MonoBehaviour
 
 	/// <summary> 홈페이지 서버의 환율/견적 API URL </summary>
 	private string apiUrl = "http://www.mikushop.co.kr/api/estimate";
+	//private string apiUrl = "http://localhost:3000/api/estimate";
 
 	/// <summary> 현재 환율 (1엔 기준 또는 계산에 쓰이는 최종 기준 환율) </summary>
 	private float exchangeRate = 0;
@@ -122,25 +123,19 @@ public class MainController : MonoBehaviour
 					EstimateResponseWrapper res = JsonUtility.FromJson<EstimateResponseWrapper>(jsonResponse);
 					if (res != null && res.success)
 					{
-						// 서버에서 계산해둔 baseExchangeRate (또는 필요에 따라 finalDisplayRate 활용 가능)
-						// 기존 로직이 (현재 환율 + 추가금액) 형태로 계산하므로 baseExchangeRate를 대입합니다.
+						// 1엔 기준 기본 환율 저장
 						exchangeRate = res.data.baseExchangeRate;
-
-						// 서버에 설정된 추가 증가액이 있다면 input에도 동기화 (원하는 경우 주석 해제)
-						// if (addRateInput != null && string.IsNullOrEmpty(addRateInput.text))
-						// {
-						//     addRateInput.text = (res.data.additionalRate * res.data.rateBasisUnit).ToString();
-						// }
 
 						if (exchangeRateText != null)
 						{
-							// 화면에 표시할 때는 기준 단위(예: 100엔 기준 최종 환율)를 보여줄 수도 있습니다.
-							exchangeRateText.text = res.data.finalDisplayRate.ToString();
+							// 🌟 수정: 최종 표시 환율이 아닌, 웹사이트와 동일한 "기준 단위(예: 100엔) 기준 순수 환율"을 표시합니다.
+							float rawBaseRateForUnit = res.data.baseExchangeRate * res.data.rateBasisUnit;
+							exchangeRateText.text = rawBaseRateForUnit.ToString("N2") + " 원";
 						}
 
-						Debug.Log($"서버 환율 갱신 성공: 기본환율({exchangeRate}), 최종표시환율({res.data.finalDisplayRate})");
+						Debug.Log($"서버 환율 갱신 성공: 기본환율({exchangeRate}), 최종환율({res.data.finalDisplayRate})");
 
-						// 환율이 갱신된 후 자동으로 견적 재계산 수행
+						// 환율 갱신 후 견적 재계산 수행
 						CalculationBtn();
 					}
 					else
