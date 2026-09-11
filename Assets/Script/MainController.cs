@@ -27,7 +27,7 @@ public class MainController : MonoBehaviour
 {
 
 	/// <summary> 홈페이지 서버의 환율/견적 API URL </summary>
-	private string apiUrl = "http://www.mikushop.co.kr/api/estimate";
+	private string apiUrl = "https://www.mikushop.co.kr/api/estimate";
 	//private string apiUrl = "http://localhost:3000/api/estimate";
 
 	/// <summary> 현재 환율 (1엔 기준 또는 계산에 쓰이는 최종 기준 환율) </summary>
