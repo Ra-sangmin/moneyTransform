@@ -130,7 +130,7 @@ public class MainController : MonoBehaviour
 						{
 							// 🌟 수정: 최종 표시 환율이 아닌, 웹사이트와 동일한 "기준 단위(예: 100엔) 기준 순수 환율"을 표시합니다.
 							float rawBaseRateForUnit = res.data.baseExchangeRate * res.data.rateBasisUnit;
-							exchangeRateText.text = rawBaseRateForUnit.ToString("N2") + " 원";
+							exchangeRateText.text = rawBaseRateForUnit.ToString("N2");
 						}
 
 						Debug.Log($"서버 환율 갱신 성공: 기본환율({exchangeRate}), 최종환율({res.data.finalDisplayRate})");
