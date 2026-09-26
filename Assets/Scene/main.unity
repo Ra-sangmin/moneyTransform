@@ -223,10 +223,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aae581f6959984baeab7bf8c3c6271c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GetImageController
-  cropperFont: {fileID: 12800000, guid: 94168173ce644ca489d919a7d0ed4ad3, type: 3}
+  cropperFont: {fileID: 12800000, guid: 69415de6d2050de45b1f360e523827b7, type: 3}
   pillSprite: {fileID: 21300000, guid: 535bfc24ddef66b48a16230cf8d8ff1c, type: 3}
-  cropperTitleFont: {fileID: 12800000, guid: 7139841720427984f87a95282a7b3802, type: 3}
-  cropperBodyFont: {fileID: 12800000, guid: 526f9e1d1095e9243b872b0fa1b005d1, type: 3}
+  cropperTitleFont: {fileID: 12800000, guid: 69415de6d2050de45b1f360e523827b7, type: 3}
+  cropperBodyFont: {fileID: 12800000, guid: 807f61a9326acae4f902c95533885961, type: 3}
   cropperBackground: {fileID: 2800000, guid: 89fafb8ebdecb5e4d8680f4b15479427, type: 3}
   cropButtonCancel: {fileID: 21300000, guid: f9f99f3d73975eb499cf81371aa91df0, type: 3}
   cropButtonApply: {fileID: 21300000, guid: eca86764c9c3af440b27878b0c229b80, type: 3}

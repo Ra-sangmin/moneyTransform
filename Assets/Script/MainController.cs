@@ -94,10 +94,23 @@ public class MainController : MonoBehaviour
 
 	private MacroPopup macroPopup;
 
+	// 저장 키 (추가 증가액 / 추가문구)
+	private const string addRateKey = "addRateValue";
+	private const string addString0Key = "addString0";
+	private const string addString1Key = "addString1";
+
 	/// <summary> 안전 영역(노치) 여백을 적용할 요소 </summary>
 	private readonly List<VisualElement> safeAreaTargets = new List<VisualElement>();
 	private Rect lastSafeArea;
 	private Vector2Int lastScreenSize;
+
+	// 가로(맥북) / 세로(아이폰) 레이아웃
+	/// <summary> 가로 화면 기준 해상도 </summary>
+	private static readonly Vector2Int landscapeReference = new Vector2Int(1920, 1080);
+	/// <summary> 세로 화면 기준 해상도 (폭을 좁게 잡아 폰에서 글자/버튼이 충분히 크게 보이도록) </summary>
+	private static readonly Vector2Int portraitReference = new Vector2Int(900, 1600);
+	private bool? isPortraitLayout;
+	private Vector2Int originalReference;
 
 	private readonly List<string> replaceStrList = new List<string>()
 	{
@@ -114,17 +127,34 @@ public class MainController : MonoBehaviour
 	{
 		if (uiDocument == null)
 			uiDocument = GetComponent<UIDocument>();
+
+#if UNITY_STANDALONE && !UNITY_EDITOR
+		// 맥 앱: 이전 버전은 전체 화면이었고 Unity 가 그 설정을 기억하므로,
+		// 이번 업데이트 후 처음 한 번은 크기 조절 가능한 창 모드로 바꿔 줌 (이후엔 사용자가 정한 창 크기 유지)
+		const string windowModeKey = "windowModeApplied";
+		if (PlayerPrefs.GetInt(windowModeKey, 0) == 0)
+		{
+			PlayerPrefs.SetInt(windowModeKey, 1);
+			PlayerPrefs.Save();
+			Screen.SetResolution(1280, 800, FullScreenMode.Windowed);
+		}
+#endif
 	}
 
 	void Start()
 	{
 		root = uiDocument.rootVisualElement;
 
+		if (uiDocument.panelSettings != null)
+			originalReference = uiDocument.panelSettings.referenceResolution;
+		UpdateOrientationLayout();
+
 		BindUI();
 
 		// 카드마다 부드러운 그림자, 합계 카드는 핑크 글로우
 		root.Query<VisualElement>(className: "card").ForEach(card => UIUtils.AddShadow(card));
 		UIUtils.AddShadow(root.Q<VisualElement>("result-card"), true);
+		root.Query<VisualElement>(className: "back-btn").ForEach(btn => UIUtils.AddShadow(btn));
 
 		timeController.timeOn += TimeOn;
 
@@ -142,6 +172,8 @@ public class MainController : MonoBehaviour
 
 	void Update()
 	{
+		UpdateOrientationLayout();
+
 		if (Screen.safeArea != lastSafeArea || Screen.width != lastScreenSize.x || Screen.height != lastScreenSize.y)
 		{
 			ApplySafeArea();
@@ -153,10 +185,58 @@ public class MainController : MonoBehaviour
 	/// </summary>
 	void OnApplicationPause(bool pause)
 	{
-		if (!pause)
+		if (pause)
+		{
+			PlayerPrefs.Save();
+		}
+		else
 		{
 			ResetExchangeRate();
 		}
+	}
+
+	void OnDestroy()
+	{
+		// 에디터에서 플레이를 멈추면 PanelSettings 에셋의 기준 해상도를 원래대로 되돌림
+		if (uiDocument != null && uiDocument.panelSettings != null && originalReference != Vector2Int.zero)
+			uiDocument.panelSettings.referenceResolution = originalReference;
+	}
+
+	/// <summary>
+	/// 화면이 세로로 길면(아이폰) 세로 레이아웃, 가로로 길면(맥북) 가로 레이아웃으로 바꿉니다.
+	/// </summary>
+	void UpdateOrientationLayout()
+	{
+		if (root == null)
+			return;
+
+		bool portrait = Screen.height > Screen.width;
+		if (isPortraitLayout == portrait)
+			return;
+
+		isPortraitLayout = portrait;
+
+		if (uiDocument.panelSettings != null)
+			uiDocument.panelSettings.referenceResolution = portrait ? portraitReference : landscapeReference;
+
+		VisualElement app = root.Q<VisualElement>("app");
+		app?.EnableInClassList("portrait", portrait);
+		app?.EnableInClassList("landscape", !portrait);
+
+		// 세로 화면에서는 적용 환율 카드를 견적 입력보다 위로 (가로 화면에서는 오른쪽 열 맨 위)
+		VisualElement rateCard = root.Q<VisualElement>("rate-card");
+		VisualElement columns = root.Q<VisualElement>(className: "columns");
+		VisualElement rightCol = root.Q<VisualElement>("right-col");
+		if (rateCard != null && columns != null && rightCol != null)
+		{
+			if (portrait)
+				columns.Insert(0, rateCard);
+			else
+				rightCol.Insert(0, rateCard);
+		}
+
+		// 레이아웃이 바뀌면 떠 있던 계산 과정 말풍선은 닫기
+		calcPopover?.Hide();
 	}
 
 	#region UI 연결
@@ -179,8 +259,31 @@ public class MainController : MonoBehaviour
 		paymentInput = SetupNumberField("payment", CalculationBtn);
 		dailyTaxInput = SetupNumberField("daily-tax", CalculationBtn);
 
-		addStringInput_0 = root.Q<TextField>("add-string-0");
-		addStringInput_1 = root.Q<TextField>("add-string-1");
+		// 입력 줄 어디를 눌러도 그 줄의 입력칸에 바로 입력되도록 (모바일 터치 영역 확대)
+		root.Query<VisualElement>(className: "form-row").ForEach(row =>
+		{
+			TextField rowField = row.Q<TextField>();
+			if (rowField == null)
+				return;
+
+			row.RegisterCallback<ClickEvent>(evt =>
+			{
+				VisualElement target = evt.target as VisualElement;
+				if (target == rowField || (target != null && rowField.Contains(target)))
+					return;
+
+				rowField.Focus();
+			});
+		});
+
+		// 추가문구(매크로 화면)와 추가 증가액은 앱을 다시 켜도 남도록 저장
+		addStringInput_0 = SetupSavedTextField("add-string-0", addString0Key);
+		addStringInput_1 = SetupSavedTextField("add-string-1", addString1Key);
+		addRateInput.SetValueWithoutNotify(PlayerPrefs.GetString(addRateKey, "0"));
+		addRateInput.RegisterValueChangedCallback(evt => PlayerPrefs.SetString(addRateKey, addRateInput.value));
+		addRateInput.RegisterCallback<FocusOutEvent>(_ => PlayerPrefs.Save());
+
+		root.Q<Button>("clear-btn").clicked += ClearQuote;
 
 		root.Q<Button>("qty-up").clicked += QuantityCountUp;
 		root.Q<Button>("qty-down").clicked += QuantityCountDown;
@@ -198,6 +301,18 @@ public class MainController : MonoBehaviour
 		calcBtn.RegisterCallback<PointerCancelEvent>(_ => calcPopover.Hide());
 		calcBtn.RegisterCallback<PointerCaptureOutEvent>(_ => calcPopover.Hide());
 		root.RegisterCallback<PointerUpEvent>(_ => calcPopover.Hide(), TrickleDown.TrickleDown);
+	}
+
+	/// <summary>
+	/// 값이 저장되는 글자 입력칸 설정
+	/// </summary>
+	TextField SetupSavedTextField(string name, string key)
+	{
+		TextField field = root.Q<TextField>(name);
+		field.SetValueWithoutNotify(PlayerPrefs.GetString(key, string.Empty));
+		field.RegisterValueChangedCallback(evt => PlayerPrefs.SetString(key, evt.newValue ?? string.Empty));
+		field.RegisterCallback<FocusOutEvent>(_ => PlayerPrefs.Save());
+		return field;
 	}
 
 	/// <summary>
@@ -240,6 +355,13 @@ public class MainController : MonoBehaviour
 		float right = (Screen.width - safeArea.xMax) * scale;
 		float bottom = safeArea.yMin * scale;
 		float top = (Screen.height - safeArea.yMax) * scale;
+
+		// 휴대폰 가로 화면: 맨 위 가장자리는 iOS 제어 센터/알림 센터 제스처 영역이라
+		// 오른쪽 위 버튼(배경 사진) 터치가 씹힐 수 있으므로 조금 아래로 내림
+		if (Application.isMobilePlatform && Screen.width > Screen.height)
+		{
+			top = Mathf.Max(top, 36f);
+		}
 
 		foreach (VisualElement target in safeAreaTargets)
 		{
@@ -407,6 +529,19 @@ public class MainController : MonoBehaviour
 		}
 
 		calcPopover.Show(calcBtn, lines);
+	}
+
+	/// <summary>
+	/// 새 견적: 상품가격/결제수수료/일내배송료/수량을 처음 상태로 (추가 증가액은 유지)
+	/// </summary>
+	public void ClearQuote()
+	{
+		salePriceInput.SetValueWithoutNotify(string.Empty);
+		paymentInput.SetValueWithoutNotify(string.Empty);
+		dailyTaxInput.SetValueWithoutNotify(string.Empty);
+		quantityCount = 1;
+		QuantityCountReset();
+		salePriceInput.Focus();
 	}
 
 	public void PaymentValueReset()

@@ -3,10 +3,10 @@
    기준 해상도 1920 x 1080
    ========================================================= */
 
+/* ---------- 기본 테마 · 배경 · 그림자 · 아이콘 ---------- */
+
 .app {
     --navy: #1F2433;
-    --text-2: #6B7182;
-    --text-3: #A3A8B6;
     --coral: #EC6B77;
     --coral-deep: #DD5663;
     --coral-soft: #FFF1F3;
@@ -15,13 +15,14 @@
     --well: #F5F6F9;
     --well-line: #ECEEF3;
     --ok: #3FB07C;
-
     flex-grow: 1;
     background-color: #FFFFFF;
     background-image: url("project://database/Assets/UI/Images/bg_cute.png");
     -unity-background-scale-mode: scale-and-crop;
     color: var(--navy);
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundR.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/GowunDodum-Regular.ttf");
+    --text-2: #4B5163;
+    --text-3: #767C8E;
 }
 
 .fill {
@@ -32,7 +33,6 @@
     bottom: 0;
 }
 
-/* ---------- 배경 사진 ---------- */
 .bg {
     background-position-x: left 0;
     background-position-y: top 0;
@@ -42,11 +42,6 @@
     background-color: rgba(255, 255, 255, 0);
 }
 
-.app--photo .bg-scrim {
-    background-color: rgba(255, 255, 255, 0.55);
-}
-
-/* ---------- 그림자 (코드에서 카드마다 자동 추가) ---------- */
 .shadow {
     position: absolute;
     left: -44px;
@@ -64,7 +59,6 @@
     background-image: url("project://database/Assets/UI/Images/shadow_glow.png");
 }
 
-/* ---------- 광택 아이콘 타일 (이미지에 글로우 여백 포함) ---------- */
 .icon-tile {
     width: 107px;
     height: 116px;
@@ -81,15 +75,48 @@
     -unity-background-scale-mode: stretch-to-fill;
 }
 
-.icon--rate { background-image: url("project://database/Assets/UI/Images/icon_rate.png"); }
-.icon--quote { background-image: url("project://database/Assets/UI/Images/icon_quote.png"); }
-.icon--fee { background-image: url("project://database/Assets/UI/Images/icon_fee.png"); }
-.icon--msg { background-image: url("project://database/Assets/UI/Images/icon_msg.png"); }
-.icon--total { background-image: url("project://database/Assets/UI/Images/icon_total.png"); }
-.icon--image { background-image: url("project://database/Assets/UI/Images/icon_image.png"); }
-.icon--edit { background-image: url("project://database/Assets/UI/Images/icon_edit.png"); }
+.icon--rate {
+    background-image: url("project://database/Assets/UI/Images/icon_rate.png");
+}
 
-/* ---------- 메인 레이아웃 ---------- */
+.icon--quote {
+    background-image: url("project://database/Assets/UI/Images/icon_quote.png");
+}
+
+.icon--msg {
+    background-image: url("project://database/Assets/UI/Images/icon_msg.png");
+}
+
+.icon--total {
+    background-image: url("project://database/Assets/UI/Images/icon_total.png");
+}
+
+.icon--image {
+    background-image: url("project://database/Assets/UI/Images/icon_image.png");
+}
+
+.icon--edit {
+    background-image: url("project://database/Assets/UI/Images/icon_edit.png");
+}
+
+.icon--trash {
+    background-image: url("project://database/Assets/UI/Images/icon_trash.png");
+}
+
+.app--photo .bg-scrim {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon--back {
+    background-image: url("project://database/Assets/UI/Images/icon_back.png");
+}
+
+.icon--done {
+    background-image: url("project://database/Assets/UI/Images/icon_done.png");
+}
+
+/* ---------- 메인 화면 · 상단 로고와 메뉴 ---------- */
+
 .main {
     flex-grow: 1;
     padding: 30px 64px 50px 64px;
@@ -100,27 +127,6 @@
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-}
-
-.brand-row {
-    flex-direction: row;
-    align-items: flex-end;
-}
-
-.brand-name {
-    font-size: 48px;
-    -unity-font-definition: url("project://database/Assets/Font/Jalnan.ttf");
-    color: var(--coral);
-    margin: 0;
-    padding: 0;
-}
-
-.brand-app {
-    font-size: 28px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--navy);
-    margin: 0 0 8px 12px;
-    padding: 0;
 }
 
 .status-pill {
@@ -153,11 +159,13 @@
 }
 
 .status-text {
-    font-size: 19px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundR.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/GowunDodum-Regular.ttf");
     color: var(--coral-deep);
     margin: 0;
     padding: 0;
+    margin-top: 1px;
+    font-size: 20px;
+    -unity-font-style: bold;
 }
 
 /* 오른쪽 위 메뉴 (사이트 상단 메뉴 느낌) */
@@ -195,7 +203,7 @@
 
 .nav-label {
     font-size: 24px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--navy);
     margin: 0 0 0 12px;
     padding: 0;
@@ -204,7 +212,7 @@
 .columns {
     flex-direction: row;
     flex-grow: 1;
-    margin-top: 30px;
+    margin-top: 26px;
 }
 
 .col {
@@ -216,7 +224,86 @@
     margin-right: 36px;
 }
 
-/* ---------- 카드 ---------- */
+/* 사진 위에 바로 올라가는 로고 글자만 반투명 흰 칩으로 받쳐서 읽기 쉽게 */
+.app--photo .brand {
+    background-color: rgba(255, 255, 255, 0.86);
+    border-radius: 26px;
+    padding: 10px 20px 12px 20px;
+    align-self: flex-start;
+}
+
+.brand {
+    flex-direction: row;
+    align-items: center;
+}
+
+.brand-logo {
+    flex-shrink: 0;
+    background-image: url("project://database/Assets/UI/Images/logo_miku.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    width: 258px;
+    height: 110px;
+    margin: -17px 0 -17px -17px;
+}
+
+.brand-side {
+    margin-left: 12px;
+    padding-left: 18px;
+    border-left-width: 2px;
+    border-left-color: #F6D3D8;
+}
+
+.brand-app {
+    color: var(--navy);
+    margin: 0;
+    padding: 0;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    font-size: 27px;
+    letter-spacing: 0;
+    padding-bottom: 3px;
+}
+
+.brand-side .status-pill {
+    margin-top: 6px;
+}
+
+.app .top-card {
+    margin: 0;
+    border-radius: 32px;
+    border-width: 1.5px;
+    -unity-background-scale-mode: scale-and-crop;
+    flex-shrink: 0;
+}
+
+.app .brand.top-card {
+    background-color: #FFFFFF;
+    background-image: url("project://database/Assets/UI/Images/card_brand.png");
+    border-color: #F9DCE2;
+    padding: 18px 32px 18px 26px;
+    align-self: auto;
+}
+
+.app .nav-pill.top-card {
+    background-color: #FFFFFF;
+    background-image: url("project://database/Assets/UI/Images/card_nav.png");
+    border-color: #EAE4FA;
+    padding: 8px;
+}
+
+.app .nav-pill.top-card .nav-btn.unity-button:hover:enabled {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.app .brand.top-card .status-pill {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.app .brand.top-card .brand-side {
+    border-left-color: rgba(236, 107, 119, 0.28);
+}
+
+/* ---------- 카드 공통 ---------- */
+
 .card {
     background-color: #FFFFFF;
     border-radius: 32px;
@@ -239,17 +326,20 @@
 
 .card-title {
     font-size: 30px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
     color: var(--navy);
     margin: 0;
     padding: 0;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    padding-bottom: 4px;
 }
 
 .card-sub {
-    font-size: 19px;
-    color: var(--text-3);
     margin: 2px 0 0 0;
     padding: 0;
+    margin-top: 7px;
+    font-size: 20px;
+    color: #7C8294;
+    -unity-font-style: normal;
 }
 
 .value-row {
@@ -259,34 +349,156 @@
 
 .value-unit {
     font-size: 30px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--coral);
     margin: 0 0 18px 10px;
     padding: 0;
 }
 
-.value-unit--sm {
-    font-size: 24px;
-    margin-bottom: 8px;
-}
-
-/* 환율 카드 */
-.rate-card {
-    padding: 28px 36px 14px 32px;
-}
-
 .rate-card .value-row {
     justify-content: flex-end;
-    margin-top: -6px;
+    margin-top: 8px;
 }
 
+.form-card .card-head {
+    margin-bottom: 10px;
+}
+
+.tappable {
+    transition-property: scale, opacity;
+    transition-duration: 0.12s;
+}
+
+.tappable.is-pressed {
+    scale: 0.985 0.985;
+    opacity: 0.92;
+}
+
+.card--rate {
+    -unity-background-scale-mode: scale-and-crop;
+    border-width: 1.5px;
+    background-image: url("project://database/Assets/UI/Images/card_rate.png");
+    border-color: #E4E8FD;
+}
+
+.card--quote {
+    -unity-background-scale-mode: scale-and-crop;
+    border-width: 1.5px;
+    background-image: url("project://database/Assets/UI/Images/card_quote.png");
+    border-color: #FBEBD6;
+}
+
+.card--msg {
+    -unity-background-scale-mode: scale-and-crop;
+    border-width: 1.5px;
+    background-image: url("project://database/Assets/UI/Images/card_msg.png");
+    border-color: #ECE6FB;
+}
+
+.card--edit {
+    -unity-background-scale-mode: scale-and-crop;
+    border-width: 1.5px;
+    background-image: url("project://database/Assets/UI/Images/card_edit.png");
+    border-color: #E4E8FD;
+}
+
+/* 파스텔 카드 위 입력칸은 반투명 흰색 */
+.card--quote .field .unity-base-text-field__input {
+    background-color: rgba(255, 255, 255, 0.82);
+    border-color: #F5E2C8;
+}
+
+.card--msg .field .unity-base-text-field__input {
+    background-color: rgba(255, 255, 255, 0.82);
+    border-color: #E6DEFA;
+}
+
+.card--edit .field .unity-base-text-field__input {
+    background-color: rgba(255, 255, 255, 0.82);
+    border-color: #E0E5FB;
+}
+
+.modal .card-head {
+    margin-bottom: 24px;
+}
+
+.quote-card .card-head {
+    margin-bottom: 6px;
+}
+
+.rate-card .card-head .value-row {
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.rate-card .value-unit {
+    margin-bottom: 14px;
+}
+
+.card--rate .field .unity-base-text-field__input {
+    background-color: rgba(255, 255, 255, 0.82);
+    border-color: #DFE4FB;
+}
+
+/* ---------- 적용 환율 카드 ---------- */
+
 .rate-value {
-    font-size: 100px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--navy);
     margin: 0;
     padding: 0;
+    font-size: 106px;
 }
+
+.rate-breakdown {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    margin: -4px 0 12px 0;
+}
+
+.rate-chip {
+    font-size: 19px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--text-2);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-width: 1.5px;
+    border-color: #E4E8FD;
+    border-radius: 17px;
+    padding: 6px 15px 7px 15px;
+    margin: 0;
+}
+
+.rate-chip--add {
+    color: var(--coral-deep);
+    background-color: #FFF4F6;
+    border-color: var(--pink-line);
+}
+
+.rate-op {
+    font-size: 22px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--text-3);
+    margin: 0 10px 0 10px;
+    padding: 0;
+}
+
+/* 오른쪽 적용 환율 카드: 숫자를 제목 줄 오른쪽에 두어 세로를 아낌 */
+.rate-card {
+    padding: 26px 34px 6px 32px;
+}
+
+.rate-card .rate-value {
+    font-size: 92px;
+}
+
+.rate-foot {
+    flex-direction: row;
+    justify-content: flex-end;
+    min-height: 8px;
+}
+
+/* ---------- 견적 입력 카드 ---------- */
 
 /* 입력 폼 카드 */
 .form-card {
@@ -296,11 +508,7 @@
 .form-row {
     flex-direction: row;
     align-items: center;
-    height: 84px;
-}
-
-.form-card .card-head {
-    margin-bottom: 10px;
+    height: 98px;
 }
 
 .form-row--divider {
@@ -310,28 +518,20 @@
 
 .row-label {
     flex-grow: 1;
-    font-size: 27px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundR.ttf");
-    color: var(--navy);
     margin: 0 0 0 4px;
     padding: 0;
-}
-
-.form-row--text {
-    height: 76px;
-}
-
-.form-row--text .row-label {
-    flex-grow: 0;
-    width: 110px;
-    color: var(--text-2);
+    font-size: 28px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    -unity-font-style: normal;
+    color: #2A2F42;
+    letter-spacing: 0.5px;
 }
 
 .row-unit {
     width: 46px;
     -unity-text-align: middle-right;
     font-size: 24px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--coral);
     margin: 0;
     padding: 0;
@@ -346,7 +546,6 @@
     flex-grow: 1;
 }
 
-/* ---------- 입력칸 (TextField) ---------- */
 .field {
     margin: 0;
     padding: 0;
@@ -359,11 +558,10 @@
     border-width: 1.5px;
     border-color: var(--well-line);
     border-radius: 18px;
-    height: 62px;
     padding: 0 22px 0 22px;
     margin: 0;
     font-size: 30px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--navy);
     -unity-text-align: middle-right;
 }
@@ -378,8 +576,8 @@
 }
 
 .field--num {
-    width: 290px;
     flex-grow: 0;
+    width: 280px;
 }
 
 .field--text {
@@ -388,9 +586,10 @@
 
 .field--text .unity-base-text-field__input {
     -unity-text-align: middle-left;
-    font-size: 26px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundR.ttf");
-    height: 58px;
+    -unity-font-definition: url("project://database/Assets/Font/GowunDodum-Regular.ttf");
+    font-size: 29px;
+    color: #232838;
+    -unity-font-style: bold;
 }
 
 .field--title {
@@ -400,52 +599,24 @@
 
 .field--title .unity-base-text-field__input {
     height: 70px;
-    font-size: 30px;
 }
 
 .field--area {
     flex-grow: 1;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 .field--area .unity-base-text-field__input {
-    flex-grow: 1;
-    height: auto;
     padding: 20px 24px 20px 24px;
-    font-size: 28px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundR.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/GowunDodum-Regular.ttf");
     -unity-text-align: upper-left;
     white-space: normal;
-}
-
-/* ---------- 대행수수료 카드 ---------- */
-.fee-card {
-    flex-direction: row;
-    align-items: center;
-    padding: 24px 26px 24px 32px;
-}
-
-.fee-value-row {
-    margin-top: -4px;
-}
-
-.fee-value {
-    font-size: 48px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--navy);
-    margin: 0;
-    padding: 0;
-}
-
-.stepper-wrap {
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.stepper-label {
-    font-size: 18px;
-    color: var(--text-3);
-    margin: 0 0 6px 0;
-    padding: 0;
+    font-size: 29px;
+    color: #232838;
+    -unity-font-style: bold;
+    flex-grow: 1;
+    min-height: 240px;
 }
 
 .stepper {
@@ -468,7 +639,7 @@
     background-color: #FFFFFF;
     color: var(--coral);
     font-size: 34px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     -unity-text-align: middle-center;
     transition-property: scale, background-color;
     transition-duration: 0.12s;
@@ -488,13 +659,174 @@
     width: 76px;
     -unity-text-align: middle-center;
     font-size: 34px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--navy);
     margin: 0;
     padding: 0;
 }
 
-/* ---------- 합계 카드 (네이비 포인트) ---------- */
+.field-label {
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    margin: 0 0 10px 4px;
+    padding: 0;
+    color: var(--text-2);
+    -unity-font-style: bold;
+    font-size: 22px;
+}
+
+.card--quote .form-row--divider {
+    border-top-color: rgba(242, 164, 58, 0.16);
+}
+
+.card--msg .form-row--divider {
+    border-top-color: rgba(155, 123, 227, 0.16);
+}
+
+.field .unity-base-text-field__input {
+    height: 76px;
+}
+
+.field--text .unity-base-text-field__input {
+    height: 70px;
+}
+
+/* 매크로 내용 입력칸은 여러 줄이 보이도록 남은 세로 공간을 모두 사용
+   (위의 입력칸 높이 76px 규칙보다 뒤에 있어야 적용됨) */
+.field--area .unity-base-text-field__input {
+    height: auto;
+}
+
+.field--title .unity-base-text-field__input {
+    font-size: 29px;
+    color: #232838;
+    -unity-font-style: bold;
+}
+
+/* 왼쪽 견적 입력 카드: 세로를 꽉 채우고 줄 간격을 고르게 */
+.quote-card {
+    flex-grow: 1;
+    margin-bottom: 0;
+    padding: 28px 34px 12px 32px;
+}
+
+.quote-card .form-row {
+    flex-grow: 1;
+    height: auto;
+    min-height: 104px;
+}
+
+.row-label-box {
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.row-label-box .row-label {
+    flex-grow: 0;
+    font-size: 28px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    -unity-font-style: normal;
+    color: #2A2F42;
+    letter-spacing: 0.5px;
+}
+
+.row-hint {
+    font-size: 19px;
+    -unity-font-definition: url("project://database/Assets/Font/GowunDodum-Regular.ttf");
+    color: #858B9C;
+    margin: 4px 0 0 4px;
+    padding: 0;
+    margin-top: 6px;
+}
+
+/* 대행수수료 줄: 수량 조절 + 자동 계산된 금액 */
+.fee-row .stepper {
+    margin-right: 14px;
+    background-color: rgba(255, 255, 255, 0.82);
+    border-width: 1.5px;
+    border-color: #F5E2C8;
+    padding: 5px;
+}
+
+.fee-row .step-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+}
+
+.fee-row .qty-value {
+    width: 64px;
+}
+
+.fee-box {
+    width: 150px;
+    height: 76px;
+    border-radius: 18px;
+    background-color: rgba(242, 164, 58, 0.10);
+    border-width: 1.5px;
+    border-color: rgba(242, 164, 58, 0.18);
+    justify-content: center;
+    padding: 0 22px 0 0;
+    flex-shrink: 0;
+}
+
+.fee-box-value {
+    -unity-text-align: middle-right;
+    font-size: 30px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--navy);
+    margin: 0;
+    padding: 0;
+}
+
+/* 새 견적(입력 초기화) 버튼 */
+.mini-btn {
+    flex-direction: row;
+    align-items: center;
+    height: 54px;
+    margin: 0;
+    padding: 0 22px 0 16px;
+    border-width: 1.5px;
+    border-color: #F5E2C8;
+    border-radius: 27px;
+    background-color: rgba(255, 255, 255, 0.9);
+    flex-shrink: 0;
+    transition-property: scale, background-color;
+    transition-duration: 0.1s;
+}
+
+.mini-btn.unity-button:hover:enabled {
+    background-color: #FFFFFF;
+    border-color: #F2C78E;
+}
+
+.mini-btn.unity-button:active:enabled {
+    background-color: #FFF4E6;
+    scale: 0.95 0.95;
+}
+
+.mini-btn-icon {
+    font-size: 26px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: #E58A1F;
+    margin: 0 8px 0 0;
+    padding: 0 0 2px 0;
+}
+
+.mini-btn-label {
+    font-size: 22px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: #B7650E;
+    margin: 0;
+    padding: 0;
+}
+
+.add-rate-row {
+    height: 104px;
+    border-top-color: rgba(103, 128, 240, 0.16);
+}
+
+/* ---------- 최종 견적 카드 · 계산 과정 ---------- */
+
 .result-card {
     flex-grow: 1;
     background-color: #242838;
@@ -502,27 +834,30 @@
     -unity-background-scale-mode: scale-and-crop;
     border-radius: 32px;
     padding: 26px 36px 22px 32px;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .result-title {
     font-size: 30px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
     color: #FFFFFF;
     margin: 0;
     padding: 0;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    padding-bottom: 4px;
 }
 
 .result-sub {
-    font-size: 19px;
-    color: rgba(255, 255, 255, 0.55);
     margin: 2px 0 0 0;
     padding: 0;
+    margin-top: 7px;
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.66);
+    -unity-font-style: normal;
 }
 
 .result-hint {
     font-size: 19px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: #FFFFFF;
     background-color: var(--coral);
     border-radius: 20px;
@@ -534,61 +869,134 @@
 .result-value-row {
     flex-direction: row;
     justify-content: flex-end;
+    flex-grow: 1;
     align-items: flex-end;
+    margin-bottom: 8px;
 }
 
 .result-value {
-    font-size: 100px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: #FFFFFF;
     margin: 0;
     padding: 0;
+    font-size: 128px;
 }
 
 .result-unit {
-    font-size: 34px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: #FF9AA6;
     margin: 0 0 20px 12px;
     padding: 0;
+    font-size: 40px;
+    margin-bottom: 26px;
 }
 
-.result-divider {
-    height: 1px;
-    background-color: rgba(255, 255, 255, 0.12);
-    margin: 2px 0 12px 0;
-    flex-shrink: 0;
+.result-actions {
+    flex-direction: row;
+    align-items: center;
+    align-self: flex-start;
 }
 
-.result-formula {
+.calc-btn {
+    height: 40px;
+    margin: 0 10px 0 0;
+    padding: 0 18px 0 18px;
+    border-width: 1.5px;
+    border-color: rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 19px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    transition-property: scale, background-color;
+    transition-duration: 0.1s;
+}
+
+.calc-btn.unity-button:hover:enabled {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.calc-btn.unity-button:active:enabled {
+    background-color: rgba(255, 255, 255, 0.26);
+    scale: 0.95 0.95;
+}
+
+.calc-pop {
+    position: absolute;
+    width: 660px;
+    background-color: #FFFFFF;
+    border-radius: 32px;
+    border-width: 1.5px;
+    border-color: #F4EEF0;
+    padding: 24px 30px 16px 30px;
+    opacity: 0;
+    translate: 0 10px;
+    transition-property: opacity, translate;
+    transition-duration: 0.15s;
+}
+
+.calc-pop--show {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.calc-pop-title {
+    font-size: 24px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--navy);
+    margin: 0 0 8px 0;
+    padding: 0 0 4px 0;
+}
+
+.calc-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0 12px 0;
+    border-top-width: 1px;
+    border-top-color: var(--line);
+}
+
+.calc-label {
+    margin: 0;
+    padding: 0;
+    color: var(--text-2);
+    -unity-font-style: bold;
+    font-size: 22px;
+}
+
+.calc-value {
     font-size: 21px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundR.ttf");
-    color: rgba(255, 255, 255, 0.82);
-    white-space: normal;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--navy);
     margin: 0;
     padding: 0;
 }
 
-.result-guide {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.42);
-    white-space: normal;
-    margin: 4px 0 0 0;
-    padding: 0;
+.calc-value--hl {
+    font-size: 25px;
+    color: var(--coral);
 }
 
-/* ---------- 탭 가능한 카드 공통 ---------- */
-.tappable {
-    transition-property: scale, opacity;
-    transition-duration: 0.12s;
+.calc-arrow {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    bottom: -11px;
+    background-color: #FFFFFF;
+    rotate: 45deg;
+    border-right-width: 1.5px;
+    border-bottom-width: 1.5px;
+    border-color: #F4EEF0;
 }
 
-.tappable.is-pressed {
-    scale: 0.985 0.985;
-    opacity: 0.92;
+/* 최종 견적: 남은 세로 공간을 모두 쓰고 숫자를 더 크게 */
+.col .result-card {
+    margin-bottom: 0;
 }
 
 /* ---------- 버튼 ---------- */
+
 .btn {
     height: 64px;
     margin: 0;
@@ -597,7 +1005,7 @@
     border-radius: 32px;
     flex-shrink: 0;
     font-size: 24px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     -unity-text-align: middle-center;
     color: var(--navy);
     transition-property: scale, background-color, border-color;
@@ -692,7 +1100,59 @@
     background-color: #FFD6DC;
 }
 
-/* ---------- 매크로/편집 화면 ---------- */
+.modal-actions .btn {
+    flex-grow: 1;
+    flex-basis: 0;
+    height: 68px;
+    border-radius: 34px;
+    margin: 0 8px 0 8px;
+}
+
+.macro-item .btn--soft {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-width: 1.5px;
+    border-color: #E1E6FC;
+}
+
+.macro-item .btn--soft-danger {
+    border-color: #F9D9DE;
+}
+
+.back-btn {
+    flex-direction: row;
+    align-items: center;
+    height: 72px;
+    margin: 0;
+    padding: 0 30px 0 14px;
+    border-width: 1.5px;
+    border-color: #F9DCE2;
+    border-radius: 32px;
+    background-color: #FFFFFF;
+    background-image: url("project://database/Assets/UI/Images/card_brand.png");
+    -unity-background-scale-mode: scale-and-crop;
+    flex-shrink: 0;
+    transition-property: scale, border-color;
+    transition-duration: 0.12s;
+}
+
+.back-btn.unity-button:hover:enabled {
+    border-color: #F3B9C2;
+}
+
+.back-btn.unity-button:active:enabled {
+    scale: 0.95 0.95;
+}
+
+.back-label {
+    margin: 0 0 0 12px;
+    padding: 0;
+    font-size: 25px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--navy);
+}
+
+/* ---------- 매크로 화면 ---------- */
+
 .screen {
     position: absolute;
     left: 0;
@@ -727,17 +1187,20 @@
 
 .screen-title {
     font-size: 38px;
-    -unity-font-definition: url("project://database/Assets/Font/Jalnan.ttf");
     color: var(--navy);
     margin: 0;
     padding: 0;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    padding-bottom: 4px;
 }
 
 .screen-sub {
-    font-size: 20px;
-    color: var(--text-3);
     margin: 0;
     padding: 0;
+    margin-top: 7px;
+    color: var(--text-2);
+    -unity-font-style: bold;
+    font-size: 22px;
 }
 
 .macro-list {
@@ -754,10 +1217,11 @@
     align-items: center;
     background-color: #FFFFFF;
     border-radius: 32px;
-    border-width: 1px;
     border-color: #F4EEF0;
     padding: 22px 24px 22px 28px;
     margin-bottom: 22px;
+    -unity-background-scale-mode: scale-and-crop;
+    border-width: 1.5px;
 }
 
 .macro-icon {
@@ -777,20 +1241,21 @@
 
 .macro-title {
     font-size: 28px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--navy);
     margin: 0;
     padding: 0;
 }
 
 .macro-content {
-    font-size: 22px;
-    color: var(--text-2);
     white-space: normal;
-    max-height: 66px;
-    overflow: hidden;
     margin: 4px 0 0 0;
     padding: 0;
+    font-size: 24px;
+    color: var(--text-2);
+    -unity-font-style: bold;
+    max-height: 70px;
+    overflow: hidden;
 }
 
 .macro-item--empty .macro-title,
@@ -802,237 +1267,6 @@
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-}
-
-.empty {
-    margin-top: 140px;
-    font-size: 26px;
-    color: var(--text-2);
-    -unity-text-align: middle-center;
-    white-space: normal;
-}
-
-.edit-card {
-    flex-grow: 1;
-    flex-shrink: 1;
-    padding: 30px 36px 28px 36px;
-    margin-bottom: 0;
-}
-
-.field-label {
-    font-size: 21px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--text-2);
-    margin: 0 0 10px 4px;
-    padding: 0;
-}
-
-.token-bar {
-    flex-direction: row;
-    align-items: center;
-    margin-top: 22px;
-    flex-shrink: 0;
-}
-
-.token-label {
-    font-size: 20px;
-    color: var(--text-3);
-    margin: 0 16px 0 4px;
-    padding: 0;
-}
-
-.token-row {
-    flex-direction: row;
-    flex-wrap: wrap;
-    flex-shrink: 1;
-}
-
-.token {
-    height: 52px;
-    margin: 0 10px 0 0;
-    padding: 0 22px 0 22px;
-    border-width: 1.5px;
-    border-color: var(--pink-line);
-    border-radius: 26px;
-    font-size: 21px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--coral-deep);
-    background-color: var(--coral-soft);
-    transition-property: scale, background-color;
-    transition-duration: 0.12s;
-}
-
-.token.unity-button:hover:enabled {
-    background-color: #FFE3E7;
-}
-
-.token.unity-button:active:enabled {
-    background-color: #FFD6DC;
-    scale: 0.95 0.95;
-}
-
-/* ---------- 확인 팝업 ---------- */
-.modal-scrim {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(31, 36, 51, 0.38);
-    opacity: 0;
-    transition-property: opacity;
-    transition-duration: 0.18s;
-}
-
-.modal-scrim--show {
-    opacity: 1;
-}
-
-.modal {
-    width: 720px;
-    background-color: #FFFFFF;
-    border-radius: 32px;
-    padding: 50px 40px 34px 40px;
-    scale: 0.95 0.95;
-    transition-property: scale;
-    transition-duration: 0.18s;
-}
-
-.modal-scrim--show .modal {
-    scale: 1 1;
-}
-
-.modal-message {
-    font-size: 30px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--navy);
-    white-space: normal;
-    -unity-text-align: middle-center;
-    margin: 0 0 40px 0;
-    padding: 0;
-}
-
-.modal-actions {
-    flex-direction: row;
-    justify-content: center;
-}
-
-.modal-actions .btn {
-    flex-grow: 1;
-    flex-basis: 0;
-    height: 68px;
-    border-radius: 34px;
-    margin: 0 8px 0 8px;
-}
-
-/* ---------- 토스트 알림 ---------- */
-.toast-wrap {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 96px;
-    align-items: center;
-    opacity: 0;
-    translate: 0 24px;
-    transition-property: opacity, translate;
-    transition-duration: 0.25s;
-}
-
-.toast-wrap--show {
-    opacity: 1;
-    translate: 0 0;
-}
-
-.toast-wrap--hide {
-    opacity: 0;
-    translate: 0 -30px;
-    transition-duration: 0.6s;
-}
-
-.toast {
-    background-color: var(--navy);
-    color: #FFFFFF;
-    font-size: 25px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    border-radius: 36px;
-    padding: 18px 40px 20px 40px;
-    margin: 0;
-}
-
-/* ---------- 카드별 파스텔 배경 (아이콘 색과 맞춤) ---------- */
-.card--rate,
-.card--quote,
-.card--fee,
-.card--msg,
-.card--edit {
-    -unity-background-scale-mode: scale-and-crop;
-    border-width: 1.5px;
-}
-
-.card--rate {
-    background-image: url("project://database/Assets/UI/Images/card_rate.png");
-    border-color: #E4E8FD;
-}
-
-.card--quote {
-    background-image: url("project://database/Assets/UI/Images/card_quote.png");
-    border-color: #FBEBD6;
-}
-
-.card--fee {
-    background-image: url("project://database/Assets/UI/Images/card_fee.png");
-    border-color: #FAE1E9;
-}
-
-.card--msg {
-    background-image: url("project://database/Assets/UI/Images/card_msg.png");
-    border-color: #ECE6FB;
-}
-
-.card--edit {
-    background-image: url("project://database/Assets/UI/Images/card_edit.png");
-    border-color: #E4E8FD;
-}
-
-/* 파스텔 카드 위 입력칸은 반투명 흰색 */
-.card--quote .field .unity-base-text-field__input,
-.card--msg .field .unity-base-text-field__input,
-.card--edit .field .unity-base-text-field__input {
-    background-color: rgba(255, 255, 255, 0.82);
-}
-
-.card--quote .field .unity-base-text-field__input {
-    border-color: #F5E2C8;
-}
-
-.card--msg .field .unity-base-text-field__input {
-    border-color: #E6DEFA;
-}
-
-.card--edit .field .unity-base-text-field__input {
-    border-color: #E0E5FB;
-}
-
-.card--quote .form-row--divider {
-    border-top-color: rgba(242, 164, 58, 0.16);
-}
-
-.card--msg .form-row--divider {
-    border-top-color: rgba(155, 123, 227, 0.16);
-}
-
-.card--fee .stepper {
-    background-color: rgba(255, 255, 255, 0.75);
-    border-width: 1.5px;
-    border-color: #F7DCE5;
-}
-
-/* ---------- 매크로 목록: 항목마다 색이 돌아가며 바뀜 ---------- */
-.macro-item {
-    -unity-background-scale-mode: scale-and-crop;
-    border-width: 1.5px;
 }
 
 .macro-item--purple {
@@ -1055,19 +1289,20 @@
     border-color: #FBEBD6;
 }
 
-.macro-icon--purple { background-image: url("project://database/Assets/UI/Images/icon_msg.png"); }
-.macro-icon--blue { background-image: url("project://database/Assets/UI/Images/icon_msg_blue.png"); }
-.macro-icon--pink { background-image: url("project://database/Assets/UI/Images/icon_msg_pink.png"); }
-.macro-icon--orange { background-image: url("project://database/Assets/UI/Images/icon_msg_orange.png"); }
-
-.macro-item .btn--soft {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-width: 1.5px;
-    border-color: #E1E6FC;
+.macro-icon--purple {
+    background-image: url("project://database/Assets/UI/Images/icon_msg.png");
 }
 
-.macro-item .btn--soft-danger {
-    border-color: #F9D9DE;
+.macro-icon--blue {
+    background-image: url("project://database/Assets/UI/Images/icon_msg_blue.png");
+}
+
+.macro-icon--pink {
+    background-image: url("project://database/Assets/UI/Images/icon_msg_pink.png");
+}
+
+.macro-icon--orange {
+    background-image: url("project://database/Assets/UI/Images/icon_msg_orange.png");
 }
 
 .title-row {
@@ -1077,7 +1312,7 @@
 
 .count-chip {
     font-size: 19px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--coral-deep);
     background-color: #FFFFFF;
     border-width: 1.5px;
@@ -1107,27 +1342,465 @@
     margin: 34px 0 0 0;
     padding: 0;
     font-size: 32px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
     color: var(--navy);
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    padding-bottom: 4px;
 }
 
 .empty-sub {
     margin: 12px 0 0 0;
     padding: 0;
-    font-size: 22px;
-    color: var(--text-2);
     -unity-text-align: middle-center;
     white-space: normal;
+    color: var(--text-2);
+    -unity-font-style: bold;
+    font-size: 22px;
 }
 
-/* ---------- 팝업 공통: 코랄 빛 배경 + 아이콘 ---------- */
-.icon--trash { background-image: url("project://database/Assets/UI/Images/icon_trash.png"); }
+.macro-list .unity-scroller--vertical {
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    width: 10px;
+    min-width: 10px;
+    max-width: 10px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+    margin: 24px 18px 64px 0;
+}
+
+.macro-list .unity-scroller__low-button,
+.macro-list .unity-scroller__high-button {
+    display: none;
+}
+
+.macro-list .unity-scroller__slider {
+    margin: 0;
+}
+
+.macro-list .unity-base-slider__tracker {
+    background-color: rgba(236, 107, 119, 0.08);
+    border-width: 0;
+    border-radius: 5px;
+}
+
+.macro-list .unity-base-slider__dragger {
+    background-color: rgba(236, 107, 119, 0.5);
+    border-width: 0;
+    border-radius: 5px;
+    left: 0;
+    width: 10px;
+}
+
+.macro-list .unity-base-slider__dragger-border {
+    display: none;
+}
+
+.msg-card {
+    margin-bottom: 30px;
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    padding: 20px 28px 20px 30px;
+}
+
+.msg-field {
+    flex-grow: 1;
+    flex-basis: 0;
+    flex-direction: row;
+    align-items: center;
+    margin-left: 26px;
+}
+
+.msg-label {
+    font-size: 26px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: #7B5CD6;
+    margin: 0 14px 0 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.macro-item--expanded .macro-content {
+    max-height: none;
+}
+
+.macro-item--expanded {
+    align-items: flex-start;
+}
+
+.macro-item--expanded .macro-icon {
+    margin-top: -10px;
+}
+
+.macro-item--expanded .macro-actions {
+    margin-top: 8px;
+}
+
+/* 항목 안 "전체 보기 / 접기" */
+.macro-more {
+    align-self: flex-start;
+    height: 38px;
+    margin: 10px 0 0 0;
+    padding: 0 18px 0 18px;
+    border-width: 1.5px;
+    border-color: rgba(123, 92, 214, 0.22);
+    border-radius: 19px;
+    background-color: rgba(255, 255, 255, 0.75);
+    color: #7B5CD6;
+    font-size: 19px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    transition-property: scale, background-color;
+    transition-duration: 0.1s;
+}
+
+.macro-more.unity-button:hover:enabled {
+    background-color: #FFFFFF;
+    border-color: rgba(123, 92, 214, 0.4);
+}
+
+.macro-more.unity-button:active:enabled {
+    background-color: #F3EEFF;
+    scale: 0.95 0.95;
+}
+
+/* 헤더의 "모두 펼치기 / 모두 접기" */
+.expand-btn {
+    flex-direction: row;
+    align-items: center;
+    height: 64px;
+    margin: 0 16px 0 0;
+    padding: 0 26px 0 22px;
+    border-width: 1.5px;
+    border-color: #E6DEFA;
+    border-radius: 32px;
+    background-color: #FFFFFF;
+    background-image: url("project://database/Assets/UI/Images/card_msg.png");
+    -unity-background-scale-mode: scale-and-crop;
+    flex-shrink: 0;
+    transition-property: scale, border-color;
+    transition-duration: 0.1s;
+}
+
+.expand-btn.unity-button:hover:enabled {
+    border-color: #CDBEF5;
+}
+
+.expand-btn.unity-button:active:enabled {
+    scale: 0.95 0.95;
+}
+
+.expand-btn--on {
+    border-color: #B9A5F2;
+    background-color: #F1ECFF;
+    background-image: none;
+}
+
+.expand-label {
+    font-size: 23px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: #5B3FB8;
+    margin: 0;
+    padding: 0;
+}
+
+.macro-list .unity-scroller--vertical .unity-scroller__slider {
+    width: 10px;
+    min-width: 10px;
+    max-width: 10px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.macro-list .unity-scroller--vertical .unity-base-slider__input,
+.macro-list .unity-scroller--vertical .unity-base-slider__drag-container {
+    width: 10px;
+    min-width: 10px;
+    max-width: 10px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+}
+
+.macro-list .unity-scroller--vertical .unity-base-slider__tracker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 3px;
+    right: 3px;
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-width: 0;
+    border-radius: 2px;
+    background-color: rgba(236, 107, 119, 0.12);
+}
+
+.macro-list .unity-scroller--vertical .unity-base-slider__dragger {
+    left: 0;
+    width: 10px;
+    margin: 0;
+    border-width: 0;
+    border-radius: 5px;
+    background-color: rgba(236, 107, 119, 0.55);
+}
+
+.macro-list .unity-scroller--vertical .unity-base-slider__dragger:hover {
+    background-color: rgba(236, 107, 119, 0.75);
+}
+
+.msg-head {
+    flex-direction: row;
+    align-items: center;
+}
+
+.msg-head.is-pressed {
+    opacity: 0.85;
+}
+
+.msg-titles {
+    width: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+}
+
+.msg-sub--value {
+    color: #7B5CD6;
+    -unity-font-style: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.msg-toggle {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 48px;
+    padding: 0 18px 0 20px;
+    margin-left: 16px;
+    border-radius: 24px;
+    border-width: 1.5px;
+    border-color: rgba(123, 92, 214, 0.25);
+    background-color: rgba(255, 255, 255, 0.85);
+}
+
+.msg-toggle-label {
+    font-size: 21px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: #7B5CD6;
+    margin: 0 12px 0 0;
+    padding: 0;
+}
+
+.msg-chevron {
+    width: 11px;
+    height: 11px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-color: #9B7BE3;
+    rotate: 45deg;
+    margin-top: -5px;
+    transition-property: rotate, margin-top;
+    transition-duration: 0.15s;
+}
+
+.msg-card--open .msg-chevron {
+    rotate: -135deg;
+    margin-top: 5px;
+}
+
+.msg-body {
+    flex-direction: row;
+    align-items: center;
+    margin: 18px 0 4px -26px;
+}
+
+.expand-icon {
+    width: 24px;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.expand-chevron {
+    width: 12px;
+    height: 12px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-color: #8A69DF;
+    rotate: 45deg;
+    margin-top: -6px;
+    transition-property: rotate, margin-top;
+    transition-duration: 0.15s;
+}
+
+.expand-chevron--2 {
+    margin-top: -4px;
+}
+
+/* 모두 펼친 상태 → 버튼은 "접기" 이므로 화살표를 위로 */
+.expand-btn--on .expand-chevron {
+    rotate: -135deg;
+    margin-top: 2px;
+}
+
+.expand-btn--on .expand-chevron--2 {
+    margin-top: -4px;
+}
+
+.expand-label-short {
+    display: none;
+    font-size: 22px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: #5B3FB8;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---------- 매크로 편집 화면 ---------- */
+
+.edit-card {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding: 30px 36px 28px 36px;
+    margin-bottom: 0;
+}
+
+.token-bar {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 22px;
+    flex-shrink: 0;
+}
+
+.token-label {
+    margin: 0 16px 0 4px;
+    padding: 0;
+    color: var(--text-2);
+    -unity-font-style: bold;
+    font-size: 22px;
+}
+
+.token-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-shrink: 1;
+}
+
+.token {
+    height: 52px;
+    margin: 0 10px 0 0;
+    padding: 0 22px 0 22px;
+    border-width: 1.5px;
+    border-color: var(--pink-line);
+    border-radius: 26px;
+    font-size: 21px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--coral-deep);
+    background-color: var(--coral-soft);
+    transition-property: scale, background-color;
+    transition-duration: 0.12s;
+}
+
+.token.unity-button:hover:enabled {
+    background-color: #FFE3E7;
+}
+
+.token.unity-button:active:enabled {
+    background-color: #FFD6DC;
+    scale: 0.95 0.95;
+}
+
+/* ---------- 팝업 · 토스트 · 배경 사진 창 ---------- */
+
+.modal-scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(31, 36, 51, 0.38);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.18s;
+}
+
+.modal-scrim--show {
+    opacity: 1;
+}
 
 .modal {
+    width: 720px;
+    background-color: #FFFFFF;
+    border-radius: 32px;
+    padding: 50px 40px 34px 40px;
+    scale: 0.95 0.95;
+    transition-property: scale;
+    transition-duration: 0.18s;
     background-image: url("project://database/Assets/UI/Images/card_modal.png");
     -unity-background-scale-mode: scale-and-crop;
     border-width: 1.5px;
     border-color: #FBE3E6;
+}
+
+.modal-scrim--show .modal {
+    scale: 1 1;
+}
+
+.modal-message {
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    color: var(--navy);
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin: 0 0 40px 0;
+    padding: 0;
+    font-size: 31px;
+}
+
+.modal-actions {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.toast-wrap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 96px;
+    align-items: center;
+    opacity: 0;
+    translate: 0 24px;
+    transition-property: opacity, translate;
+    transition-duration: 0.25s;
+}
+
+.toast-wrap--show {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.toast-wrap--hide {
+    opacity: 0;
+    translate: 0 -30px;
+    transition-duration: 0.6s;
+}
+
+.toast {
+    background-color: var(--navy);
+    color: #FFFFFF;
+    font-size: 25px;
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
+    border-radius: 36px;
+    padding: 18px 40px 20px 40px;
+    margin: 0;
 }
 
 .modal-icon {
@@ -1138,10 +1811,6 @@
 .modal--wide {
     width: 940px;
     padding: 40px 40px 34px 40px;
-}
-
-.modal .card-head {
-    margin-bottom: 24px;
 }
 
 /* 배경 사진 미리보기 */
@@ -1164,7 +1833,7 @@
     left: 18px;
     top: 18px;
     font-size: 19px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
+    -unity-font-definition: url("project://database/Assets/Font/CookieRun-Bold.ttf");
     color: var(--coral-deep);
     background-color: #FFFFFF;
     border-width: 1.5px;
@@ -1175,211 +1844,285 @@
 }
 
 .bg-hint {
-    font-size: 20px;
-    color: var(--text-3);
     -unity-text-align: middle-center;
     margin: 16px 0 28px 0;
     padding: 0;
-}
-
-/* ---------- 글꼴: 제목은 잘난체(귀여운 제목체), 본문은 나눔스퀘어라운드 ---------- */
-.card-title,
-.result-title,
-.screen-title,
-.empty-title {
-    -unity-font-definition: url("project://database/Assets/Font/Jalnan.ttf");
-}
-
-/* ---------- 나눔스퀘어라운드 글꼴에 맞춘 간격 조정 ---------- */
-.card-sub,
-.result-sub,
-.screen-sub {
-    margin-top: 7px;
-}
-
-.rate-card .value-row {
-    margin-top: 8px;
-}
-
-.rate-value {
-    font-size: 106px;
-}
-
-.fee-value-row {
-    margin-top: 6px;
-}
-
-.result-card {
-    justify-content: flex-start;
-}
-
-.result-value-row {
-    flex-grow: 1;
-    align-items: flex-end;
-    margin-bottom: 8px;
-}
-
-.result-guide {
-    margin-top: 6px;
-}
-
-.status-text {
-    margin-top: 1px;
-}
-
-.card-title,
-.result-title,
-.screen-title,
-.empty-title {
-    padding-bottom: 4px;
-}
-
-.brand-name {
-    padding-bottom: 2px;
-}
-
-/* ---------- 계산 과정 보기 (누르고 있는 동안만 표시) ---------- */
-.result-actions {
-    flex-direction: row;
-    align-items: center;
-    align-self: flex-start;
-}
-
-.calc-btn {
-    height: 40px;
-    margin: 0 10px 0 0;
-    padding: 0 18px 0 18px;
-    border-width: 1.5px;
-    border-color: rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #FFFFFF;
-    font-size: 19px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    transition-property: scale, background-color;
-    transition-duration: 0.1s;
-}
-
-.calc-btn.unity-button:hover:enabled {
-    background-color: rgba(255, 255, 255, 0.16);
-}
-
-.calc-btn.unity-button:active:enabled {
-    background-color: rgba(255, 255, 255, 0.26);
-    scale: 0.95 0.95;
-}
-
-.calc-pop {
-    position: absolute;
-    width: 660px;
-    background-color: #FFFFFF;
-    border-radius: 32px;
-    border-width: 1.5px;
-    border-color: #F4EEF0;
-    padding: 24px 30px 16px 30px;
-    opacity: 0;
-    translate: 0 10px;
-    transition-property: opacity, translate;
-    transition-duration: 0.15s;
-}
-
-.calc-pop--show {
-    opacity: 1;
-    translate: 0 0;
-}
-
-.calc-pop-title {
-    font-size: 24px;
-    -unity-font-definition: url("project://database/Assets/Font/Jalnan.ttf");
-    color: var(--navy);
-    margin: 0 0 8px 0;
-    padding: 0 0 4px 0;
-}
-
-.calc-row {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0 12px 0;
-    border-top-width: 1px;
-    border-top-color: var(--line);
-}
-
-.calc-label {
-    font-size: 19px;
     color: var(--text-2);
-    margin: 0;
-    padding: 0;
-}
-
-.calc-value {
-    font-size: 21px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--navy);
-    margin: 0;
-    padding: 0;
-}
-
-.calc-value--hl {
-    font-size: 25px;
-    color: var(--coral);
-}
-
-.calc-arrow {
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    bottom: -11px;
-    background-color: #FFFFFF;
-    rotate: 45deg;
-    border-right-width: 1.5px;
-    border-bottom-width: 1.5px;
-    border-color: #F4EEF0;
-}
-
-/* ---------- 엔화 환율: 기준 + 추가 = 적용 환율 ---------- */
-.rate-breakdown {
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    margin: 0 0 8px 0;
-}
-
-.rate-chip {
-    font-size: 19px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--text-2);
-    background-color: rgba(255, 255, 255, 0.85);
-    border-width: 1.5px;
-    border-color: #E4E8FD;
-    border-radius: 17px;
-    padding: 6px 15px 7px 15px;
-    margin: 0;
-}
-
-.rate-chip--add {
-    color: var(--coral-deep);
-    background-color: #FFF4F6;
-    border-color: var(--pink-line);
-}
-
-.rate-op {
+    -unity-font-style: bold;
     font-size: 22px;
-    -unity-font-definition: url("project://database/Assets/Font/NanumSquareRoundEB.ttf");
-    color: var(--text-3);
-    margin: 0 10px 0 10px;
-    padding: 0;
 }
 
-/* ---------- 배경 사진을 선명하게: 흰 막을 아주 옅게 ---------- */
-.app--photo .bg-scrim {
-    background-color: rgba(255, 255, 255, 0.1);
+/* ---------- 세로 화면 (아이폰): 화면이 세로로 길면 MainController 가 .app 에 .portrait 를 붙임 (기준 900 x 1600) ---------- */
+
+.portrait .main {
+    padding: 20px 28px 28px 28px;
 }
 
-/* 사진 위에 바로 올라가는 로고 글자만 반투명 흰 칩으로 받쳐서 읽기 쉽게 */
-.app--photo .brand {
-    background-color: rgba(255, 255, 255, 0.86);
-    border-radius: 26px;
-    padding: 10px 20px 12px 20px;
-    align-self: flex-start;
+.portrait .brand-logo {
+    width: 224px;
+    height: 95px;
+    margin: -15px -15px -15px -15px;
+}
+
+.portrait .brand-side {
+    margin-left: 10px;
+    padding-left: 14px;
+}
+
+.portrait .brand-app {
+    font-size: 24px;
+}
+
+/* 오른쪽 위 메뉴는 아이콘만 */
+.portrait .nav-label {
+    display: none;
+}
+
+.portrait .nav-btn {
+    padding: 0 10px 0 10px;
+}
+
+.portrait .columns {
+    flex-direction: column;
+    margin-top: 22px;
+}
+
+.portrait .col--left {
+    flex-basis: auto;
+    margin-right: 0;
+    margin-bottom: 22px;
+}
+
+.portrait .col {
+    flex-basis: auto;
+    flex-grow: 0;
+}
+
+.portrait .quote-card {
+    padding: 24px 28px 8px 28px;
+    flex-grow: 1;
+}
+
+.portrait .field--num {
+    width: 300px;
+}
+
+.portrait .rate-card {
+    margin-bottom: 22px;
+    padding: 24px 28px 6px 28px;
+}
+
+.portrait .rate-card .rate-value {
+    font-size: 84px;
+}
+
+.portrait .add-rate-row {
+    height: 112px;
+}
+
+.portrait .result-card {
+    padding: 26px 30px 22px 28px;
+    flex-grow: 0;
+    height: 440px;
+    min-height: 440px;
+}
+
+.portrait .result-head {
+    flex-wrap: wrap;
+}
+
+.portrait .result-value {
+    font-size: 124px;
+}
+
+.portrait .screen-inner {
+    padding: 20px 28px 28px 28px;
+}
+
+.portrait .screen-icon,
+.portrait .screen-sub,
+.portrait .expand-label {
+    display: none;
+}
+
+.portrait .screen-titles {
+    margin-left: 18px;
+}
+
+.portrait .expand-btn {
+    margin-right: 12px;
+    padding: 0 20px 0 16px;
+}
+
+.portrait .screen-header .btn--primary {
+    padding: 0 24px 0 24px;
+}
+
+.portrait .msg-field {
+    flex-basis: 100%;
+    flex-grow: 0;
+    width: 100%;
+    margin: 18px 0 0 0;
+}
+
+/* ---------- 매크로 화면 (이어서) ---------- */
+
+.msg-body .msg-field {
+    flex-basis: 0;
+    flex-grow: 1;
+    width: auto;
+    margin: 0 0 0 26px;
+}
+
+/* ---------- 세로 화면 (아이폰): 화면이 세로로 길면 MainController 가 .app 에 .portrait 를 붙임 (기준 900 x 1600) (이어서) ---------- */
+
+.portrait .msg-label {
+    width: 86px;
+}
+
+.portrait .macro-list {
+    margin: -20px -28px 0 -28px;
+}
+
+.portrait .macro-list .unity-scroll-view__content-container {
+    padding: 20px 28px 64px 28px;
+}
+
+.portrait .macro-list .unity-scroller--vertical {
+    margin: 24px 8px 64px 0;
+}
+
+.portrait .macro-item {
+    padding: 22px 20px 22px 26px;
+}
+
+.portrait .macro-text {
+    margin: 0 14px 0 18px;
+}
+
+.portrait .empty-card {
+    width: auto;
+    align-self: stretch;
+    padding: 48px 36px 44px 36px;
+}
+
+.portrait .modal,
+.portrait .modal--wide {
+    width: 820px;
+}
+
+.portrait .col--left {
+    flex-grow: 1;
+}
+
+.portrait .quote-card .form-row {
+    flex-grow: 1;
+    height: auto;
+    min-height: 112px;
+    max-height: none;
+}
+
+.portrait .row-label,
+.portrait .row-label-box .row-label {
+    font-size: 32px;
+}
+
+.portrait .row-hint {
+    font-size: 21px;
+}
+
+.portrait .field .unity-base-text-field__input {
+    height: 92px;
+    font-size: 36px;
+    border-radius: 22px;
+}
+
+.portrait .fee-box {
+    height: 92px;
+    border-radius: 22px;
+}
+
+.portrait .fee-box-value {
+    font-size: 36px;
+}
+
+.portrait .fee-row .step-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 35px;
+}
+
+.portrait .row-unit {
+    font-size: 28px;
+}
+
+.portrait .fee-row .stepper {
+    border-radius: 42px;
+}
+
+.portrait .card-title,
+.portrait .result-title {
+    font-size: 34px;
+}
+
+.portrait .card-sub,
+.portrait .result-sub {
+    font-size: 22px;
+}
+
+.portrait .calc-btn {
+    font-size: 22px;
+    height: 48px;
+    border-radius: 24px;
+}
+
+.portrait .result-hint {
+    font-size: 22px;
+}
+
+.portrait .field--area .unity-base-text-field__input {
+    font-size: 32px;
+}
+
+/* 세로 화면: 자동 입력 버튼이 넘치면 다음 줄로 */
+.portrait .token-bar,
+.portrait .token-row {
+    flex-wrap: wrap;
+}
+
+.portrait .msg-card {
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    padding: 20px 28px 20px 30px;
+}
+
+.portrait .msg-titles {
+    width: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+}
+
+/* 세로 화면: 문구 1, 문구 2 를 한 줄씩 */
+.portrait .msg-body {
+    flex-direction: column;
+    align-items: stretch;
+    margin: 18px 0 4px 0;
+}
+
+.portrait .msg-body .msg-field {
+    flex-basis: auto;
+    flex-grow: 0;
+    width: auto;
+    margin: 0 0 14px 0;
+}
+
+/* 세로 화면: 짧은 글자(펼치기/접기)와 아이콘을 함께 보여 줌 */
+.portrait .expand-label-short {
+    display: flex;
+}
+
+.portrait .expand-icon {
+    margin-right: 8px;
 }

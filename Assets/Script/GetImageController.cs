@@ -144,11 +144,87 @@ public class GetImageController : MonoBehaviour
 
 	public void PickImage()
 	{
-		NativeGallery.GetImageFromGallery((path) =>
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+		// 맥 앱: NativeGallery 는 맥을 지원하지 않으므로 macOS 기본 파일 선택 창을 사용
+		PickImageMac();
+#else
+		// 이미 사진 선택 창이 열려 있는 중이면 (iOS) 안내만
+		if (NativeGallery.IsMediaPickerBusy())
+		{
+			PopupManager.Instance.WarningPopupCreate("사진 선택 창이 아직 열려 있어요. 잠시 후 다시 눌러 주세요");
+			return;
+		}
+
+		NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
 		{
 			LoadImageAtPath(path);
 		}, "배경 사진 선택", "image/*");
+
+		// 사진 접근 권한이 거부되어 있으면 아무 반응이 없는 것처럼 보이므로 안내 + 설정 열기
+		if (permission == NativeGallery.Permission.Denied)
+		{
+			PopupManager.Instance.OkPopupCreate("사진 보관함 접근이 꺼져 있어요.\n설정에서 사진 접근을 허용해 주세요.", () =>
+			{
+				if (NativeGallery.CanOpenSettings())
+					NativeGallery.OpenSettings();
+			}, null, false, false, "설정 열기", "닫기");
+		}
+#endif
 	}
+
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+	private bool macPickerOpen;
+
+	/// <summary>
+	/// macOS 기본 "파일 열기" 창으로 사진을 고릅니다. (osascript 사용, 창이 닫힐 때까지 앱은 멈추지 않음)
+	/// </summary>
+	private async void PickImageMac()
+	{
+		if (macPickerOpen)
+			return;
+
+		macPickerOpen = true;
+		string path = null;
+
+		try
+		{
+			path = await System.Threading.Tasks.Task.Run(() =>
+			{
+				var startInfo = new System.Diagnostics.ProcessStartInfo
+				{
+					FileName = "/usr/bin/osascript",
+					Arguments = "-e \"POSIX path of (choose file of type {\\\"public.png\\\", \\\"public.jpeg\\\"} with prompt \\\"배경 사진 선택\\\")\"",
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					CreateNoWindow = true,
+				};
+
+				using (var process = System.Diagnostics.Process.Start(startInfo))
+				{
+					string output = process.StandardOutput.ReadToEnd();
+					process.WaitForExit();
+					// 취소하면 종료 코드가 0 이 아님
+					return process.ExitCode == 0 ? output.Trim() : null;
+				}
+			});
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogError($"맥 사진 선택 실패: {e.Message}");
+			PopupManager.Instance.WarningPopupCreate("사진 선택 창을 열지 못했어요");
+		}
+		finally
+		{
+			macPickerOpen = false;
+		}
+
+		if (!string.IsNullOrEmpty(path))
+		{
+			LoadImageAtPath(path);
+		}
+	}
+#endif
 
 	public void LoadImageAtPath(string path, bool forceOn = false)
 	{
@@ -160,6 +236,7 @@ public class GetImageController : MonoBehaviour
 		if (texture == null)
 		{
 			Debug.Log("Couldn't load texture from " + path);
+			PopupManager.Instance.WarningPopupCreate(forceOn ? "저장된 배경 사진을 불러오지 못했어요" : "이 사진은 불러올 수 없어요. 다른 사진을 골라 주세요");
 			return;
 		}
 
@@ -196,6 +273,7 @@ public class GetImageController : MonoBehaviour
 		SetUIVisible(false);
 
 		ApplyCropperSkin(ImageCropper.Instance);
+		UpdateCropperLayout(ImageCropper.Instance);
 
 		ImageCropper.Instance.Show(texture, (bool result, Texture originalImage, Texture2D croppedImage) =>
 		{
@@ -402,6 +480,64 @@ public class GetImageController : MonoBehaviour
 		catch (System.Exception e)
 		{
 			Debug.LogWarning($"크롭 화면 꾸미기 실패: {e.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 화면 방향에 맞춰 크롭 화면 크기를 조정합니다.
+	/// - 가로(맥북): 기존처럼 1024x768 기준, 높이에 맞춤
+	/// - 세로(아이폰): 폭 520 기준으로 맞춰 상단 버튼과 제목이 겹치지 않게 하고,
+	///   아래 툴바는 홈 바(안전 영역) 위로 올림
+	/// </summary>
+	private void UpdateCropperLayout(ImageCropper cropper)
+	{
+		if (cropper == null)
+			return;
+
+		try
+		{
+			Transform canvas = cropper.transform.Find("Canvas");
+			if (canvas == null)
+				return;
+
+			bool portrait = Screen.height > Screen.width;
+
+			UGUI.CanvasScaler scaler = canvas.GetComponent<UGUI.CanvasScaler>();
+			if (scaler != null)
+			{
+				scaler.uiScaleMode = UGUI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+				scaler.referenceResolution = portrait ? new Vector2(520f, 900f) : new Vector2(1024f, 768f);
+				scaler.matchWidthOrHeight = portrait ? 0f : 1f;
+			}
+
+			// 캔버스 1px 당 화면 픽셀 (세로: 폭 기준, 가로: 높이 기준)
+			float scale = portrait ? Screen.width / 520f : Screen.height / 768f;
+			if (scale <= 0f)
+				scale = 1f;
+
+			Transform buttons = canvas.Find("Buttons");
+			if (buttons != null)
+			{
+				UGUI.Text subtitle = buttons.Find("Subtitle")?.GetComponent<UGUI.Text>();
+				if (subtitle != null)
+					subtitle.fontSize = portrait ? 12 : 14;
+
+				UGUI.Text title = buttons.Find("Title")?.GetComponent<UGUI.Text>();
+				if (title != null)
+					title.fontSize = portrait ? 22 : 24;
+			}
+
+			// 아래 툴바: 홈 바 영역만큼 위로
+			RectTransform toolbar = canvas.Find("ToolBar") as RectTransform;
+			if (toolbar != null)
+			{
+				float safeBottom = Screen.safeArea.yMin / scale;
+				toolbar.anchoredPosition = new Vector2(0f, 22f + safeBottom);
+			}
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning($"크롭 화면 크기 조정 실패: {e.Message}");
 		}
 	}
 
