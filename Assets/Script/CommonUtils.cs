@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 //using Watermelon;
 
 public static class CommonUtils
@@ -31,16 +32,58 @@ public static class CommonUtils
 	//    }
 	//}
 
-	public static void ReplaceStr(this string checkValue, InputField inputField , ref string result)
+	public static void ReplaceStr(this string checkValue, TextField inputField , ref string result)
 	{
-		float setValue = inputField.text != string.Empty ? float.Parse(inputField.text) : 0;
+		double setValue = inputField.value.ToNumber();
 
 		ReplaceStr(checkValue, setValue , ref result);
 	}
 
-	public static void ReplaceStr(this string checkValue, float setValue , ref string result)
+	public static void ReplaceStr(this string checkValue, double setValue , ref string result)
 	{
 		result = result.Replace(checkValue, setValue.ToString("n0"));
+	}
+
+	/// <summary>
+	/// 문자열을 숫자로 변환 (쉼표 허용, 비어 있거나 잘못된 값이면 0)
+	/// </summary>
+	public static double ToNumber(this string value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return 0;
+
+		double result;
+		if (double.TryParse(value.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out result))
+			return result;
+
+		return 0;
+	}
+
+	/// <summary>
+	/// 숫자 입력칸용: 숫자, 쉼표, 소수점(1개)만 남깁니다.
+	/// </summary>
+	public static string FilterNumber(this string value)
+	{
+		if (string.IsNullOrEmpty(value))
+			return string.Empty;
+
+		System.Text.StringBuilder builder = new System.Text.StringBuilder(value.Length);
+		bool hasDot = false;
+
+		foreach (char c in value)
+		{
+			if ((c >= '0' && c <= '9') || c == ',')
+			{
+				builder.Append(c);
+			}
+			else if (c == '.' && !hasDot)
+			{
+				builder.Append(c);
+				hasDot = true;
+			}
+		}
+
+		return builder.ToString();
 	}
 
 	public static string SetTimeStr(this int timeValue)

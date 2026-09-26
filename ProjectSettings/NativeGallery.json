@@ -1,0 +1,6 @@
+{
+    "AutomatedSetup": true,
+    "PhotoLibraryUsageDescription": "배경 이미지를 설정하기 위해 사진 보관함에 접근합니다.",
+    "PhotoLibraryAdditionsUsageDescription": "이미지를 사진 보관함에 저장하기 위해 접근합니다.",
+    "DontAskLimitedPhotosPermissionAutomaticallyOnIos14": true
+}

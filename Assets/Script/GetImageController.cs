@@ -1,171 +1,647 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
+using UGUI = UnityEngine.UI;
 
+/// <summary>
+/// 배경 사진 선택/크롭/저장 (UI Toolkit 배경 요소에 표시)
+/// </summary>
 public class GetImageController : MonoBehaviour
 {
-    //[SerializeField] private List<RawImage> imageList = new List<RawImage>();
-    [SerializeField] private RectTransform parant;
-	[SerializeField] private RawImage image;
+	/// <summary> 배경 이미지 파일 이름 저장 키 </summary>
+	private const string imagePathKey = "bgImagePath";
+	/// <summary> 크롭 이미지 파일 이름 접두사 </summary>
+	private const string croppedFilePrefix = "cropped_image_";
 
-	public float maxHeight;
+	/// <summary> 사진을 표시할 배경 요소 </summary>
+	private VisualElement bgElement;
+	/// <summary> 사진이 있을 때 클래스를 붙일 앱 루트 </summary>
+	private VisualElement appElement;
+	/// <summary> 크롭 화면을 띄울 때 숨길 UI 전체 </summary>
+	private VisualElement uiRoot;
 
-    private string imagePath;
-    private string imagePathKey;
+	private Texture2D currentTexture;
 
+	[Header("크롭 화면 꾸미기")]
+	/// <summary> 크롭 화면 버튼 글꼴 </summary>
+	[SerializeField] private Font cropperFont;
+	/// <summary> 크롭 화면 버튼 배경 (둥근 알약 모양) </summary>
+	[SerializeField] private Sprite pillSprite;
 
-    private void Awake()
-    {
-        SetMacHeight();
-    }
+	/// <summary> 크롭 화면 제목 글꼴 (잘난체) </summary>
+	[SerializeField] private Font cropperTitleFont;
+	/// <summary> 크롭 화면 설명 글꼴 </summary>
+	[SerializeField] private Font cropperBodyFont;
+	/// <summary> 크롭 화면 배경 (합계 카드와 같은 그라데이션) </summary>
+	[SerializeField] private Texture2D cropperBackground;
+	/// <summary> 크롭 화면 상단 취소/적용 버튼 이미지 </summary>
+	[SerializeField] private Sprite cropButtonCancel;
+	[SerializeField] private Sprite cropButtonApply;
+	[SerializeField] private Sprite cropButtonGlow;
+	[SerializeField] private Sprite cropIconClose;
+	[SerializeField] private Sprite cropIconCheck;
+	/// <summary> 크롭 화면 하단 툴바 아이콘 </summary>
+	[SerializeField] private Sprite iconFlipHorizontal;
+	[SerializeField] private Sprite iconFlipVertical;
+	[SerializeField] private Sprite iconRotate;
 
-    void SetMacHeight()
-    {
-        RectTransform canvasRect = transform.GetComponentInParent<Canvas>().transform as RectTransform;
-        maxHeight = canvasRect.sizeDelta.y;
-    }
+	/// <summary> 이미 꾸민 크롭 화면 (한 번만 적용) </summary>
+	private ImageCropper skinnedCropper;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-		string savedFileName = PlayerPrefs.GetString(imagePathKey, string.Empty);
+	/// <summary> 사용자가 고른 배경 사진이 있는지 </summary>
+	public bool HasPhoto => currentTexture != null;
 
-		if (savedFileName != string.Empty)
+	/// <summary> 지금 배경 사진 </summary>
+	public Texture2D CurrentTexture => currentTexture;
+
+	public void Init(VisualElement bg, VisualElement app, VisualElement root)
+	{
+		bgElement = bg;
+		appElement = app;
+		uiRoot = root;
+
+		string savedFileName = GetSavedFileName();
+
+		if (!string.IsNullOrEmpty(savedFileName))
 		{
-			// 2. 현재 시점의 안전한 로컬 저장 폴더 경로와 파일 이름을 합쳐 진짜 경로를 만듭니다.
+			// 현재 기기의 저장 폴더 경로와 파일 이름을 합쳐 실제 경로를 만듭니다.
 			string currentFullPath = Path.Combine(Application.persistentDataPath, savedFileName);
 
-			// 3. 조립된 경로로 이미지를 불러옵니다.
-			LoadImageAtPath(currentFullPath, true);
+			if (File.Exists(currentFullPath))
+			{
+				LoadImageAtPath(currentFullPath, true);
+			}
 		}
-    }
+	}
 
-    public void PickImage()
-    {
-        NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
-        {
-            LoadImageAtPath(path);
-        }, "Select a PNG image", "image/png");
-    }
+	/// <summary>
+	/// 저장된 배경 사진 파일 이름을 찾습니다.
+	/// 이전 버전은 저장 키가 비어 있는 채로(null) 저장했기 때문에, 업데이트 후에도
+	/// 기존 배경이 유지되도록 예전 방식으로 저장된 값도 찾아서 새 키로 옮깁니다.
+	/// </summary>
+	private string GetSavedFileName()
+	{
+		string fileName = PlayerPrefs.GetString(imagePathKey, string.Empty);
+		if (!string.IsNullOrEmpty(fileName))
+			return fileName;
+
+		// 1) 예전 버전 방식 (키 없이 저장된 값)
+		foreach (string legacyKey in new string[] { null, string.Empty })
+		{
+			try
+			{
+				string legacy = PlayerPrefs.GetString(legacyKey, string.Empty);
+				if (!string.IsNullOrEmpty(legacy) && File.Exists(Path.Combine(Application.persistentDataPath, legacy)))
+				{
+					fileName = legacy;
+					break;
+				}
+			}
+			catch (System.Exception)
+			{
+				// 예전 키로 읽을 수 없는 환경이면 다음 방법으로
+			}
+		}
+
+		// 2) 그래도 없으면 저장 폴더에 남아 있는 가장 최근 크롭 이미지를 사용
+		if (string.IsNullOrEmpty(fileName))
+		{
+			try
+			{
+				string newestFile = null;
+				System.DateTime newestTime = System.DateTime.MinValue;
+
+				foreach (string file in Directory.GetFiles(Application.persistentDataPath, croppedFilePrefix + "*.png"))
+				{
+					System.DateTime time = File.GetLastWriteTime(file);
+					if (time > newestTime)
+					{
+						newestTime = time;
+						newestFile = file;
+					}
+				}
+
+				if (newestFile != null)
+				{
+					fileName = Path.GetFileName(newestFile);
+				}
+			}
+			catch (System.Exception e)
+			{
+				Debug.LogWarning($"예전 배경 사진 찾기 실패: {e.Message}");
+			}
+		}
+
+		// 찾았으면 새 키로 옮겨 저장
+		if (!string.IsNullOrEmpty(fileName))
+		{
+			PlayerPrefs.SetString(imagePathKey, fileName);
+			PlayerPrefs.Save();
+		}
+
+		return fileName;
+	}
+
+	public void PickImage()
+	{
+		NativeGallery.GetImageFromGallery((path) =>
+		{
+			LoadImageAtPath(path);
+		}, "배경 사진 선택", "image/*");
+	}
 
 	public void LoadImageAtPath(string path, bool forceOn = false)
 	{
-		if (path != null)
+		if (path == null)
+			return;
+
+		Texture2D texture = NativeGallery.LoadImageAtPath(path, 2048);
+		if (texture == null)
 		{
-			Texture2D texture = NativeGallery.LoadImageAtPath(path, 1080);
-			if (texture == null)
+			Debug.Log("Couldn't load texture from " + path);
+			return;
+		}
+
+		if (forceOn)
+		{
+			SetTexture(texture, Path.GetFileName(path));
+			return;
+		}
+
+		// 1. 크로퍼 설정
+		ImageCropper.Settings cropperSettings = new ImageCropper.Settings();
+
+		// 2. 스크립트가 읽을 수 있도록 잠금을 해제합니다.
+		cropperSettings.markTextureNonReadable = false;
+
+		// 3. 실제 배경 영역의 가로세로 비율로 크롭 박스를 고정합니다.
+		if (bgElement != null)
+		{
+			float width = bgElement.resolvedStyle.width;
+			float height = bgElement.resolvedStyle.height;
+
+			if (width > 0 && height > 0)
 			{
-				Debug.Log("Couldn't load texture from " + path);
-				return;
+				float targetRatio = width / height;
+				cropperSettings.selectionMinAspectRatio = targetRatio;
+				cropperSettings.selectionMaxAspectRatio = targetRatio;
 			}
-			else
+		}
+
+		// 크롭 화면(uGUI 플러그인)이 떠 있는 동안 UI Toolkit 화면을 숨깁니다.
+		SetUIVisible(false);
+
+		ApplyCropperSkin(ImageCropper.Instance);
+
+		ImageCropper.Instance.Show(texture, (bool result, Texture originalImage, Texture2D croppedImage) =>
+		{
+			SetUIVisible(true);
+
+			if (result && croppedImage != null)
 			{
-				if (forceOn == false)
+				byte[] bytes = croppedImage.EncodeToPNG();
+				string fileName = croppedFilePrefix + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".png";
+				string savedPath = Path.Combine(Application.persistentDataPath, fileName);
+
+				File.WriteAllBytes(savedPath, bytes);
+
+				// 새 이미지를 저장했으니 이전 크롭 이미지 파일은 삭제 (저장공간 누적 방지)
+				DeleteOldCroppedImages(fileName);
+
+				SetTexture(croppedImage, fileName);
+
+				PopupManager.Instance.WarningPopupCreate("배경 사진을 바꿨어요");
+			}
+			Destroy(texture);
+		}, cropperSettings);
+	}
+
+	private void SetUIVisible(bool visible)
+	{
+		if (uiRoot != null)
+		{
+			uiRoot.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+		}
+	}
+
+	/// <summary>
+	/// 지금 사용하는 파일을 제외한 크롭 이미지 파일을 모두 삭제
+	/// </summary>
+	private void DeleteOldCroppedImages(string keepFileName)
+	{
+		try
+		{
+			foreach (string file in Directory.GetFiles(Application.persistentDataPath, croppedFilePrefix + "*.png"))
+			{
+				if (Path.GetFileName(file) != keepFileName)
 				{
-					// 1. 크로퍼 설정을 새로 하나 만듭니다.
-					ImageCropper.Settings cropperSettings = new ImageCropper.Settings();
+					File.Delete(file);
+				}
+			}
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning($"이전 이미지 삭제 실패: {e.Message}");
+		}
+	}
 
-					// 2. 스크립트가 읽을 수 있도록 잠금을 해제합니다.
-					cropperSettings.markTextureNonReadable = false;
+	private void SetTexture(Texture2D texture, string fileName)
+	{
+		if (texture == null || bgElement == null)
+			return;
 
-					// 🌟 [추가된 부분] 실제 표시될 RawImage의 가로세로 비율을 크로퍼에 적용합니다.
-					if (image != null)
+		// 파일 이름만 저장합니다. (기기 경로는 실행 때마다 바뀔 수 있음)
+		PlayerPrefs.SetString(imagePathKey, fileName);
+		PlayerPrefs.Save();
+
+		if (currentTexture != null && currentTexture != texture)
+		{
+			Destroy(currentTexture);
+		}
+		currentTexture = texture;
+
+		// 세로를 화면에 꽉 채우고, 가로는 원본 비율을 유지하며 반복(타일링)합니다.
+		texture.wrapMode = TextureWrapMode.Repeat;
+		bgElement.style.backgroundImage = new StyleBackground(texture);
+		bgElement.style.backgroundSize = new BackgroundSize(Length.Auto(), Length.Percent(100));
+		bgElement.style.backgroundRepeat = new BackgroundRepeat(Repeat.Repeat, Repeat.NoRepeat);
+
+		appElement?.AddToClassList("app--photo");
+	}
+
+	/// <summary>
+	/// 사진을 지우고 기본 배경으로 되돌립니다.
+	/// </summary>
+	public void ResetToDefault()
+	{
+		PlayerPrefs.DeleteKey(imagePathKey);
+		PlayerPrefs.Save();
+
+		if (bgElement != null)
+		{
+			bgElement.style.backgroundImage = StyleKeyword.Null;
+		}
+		appElement?.RemoveFromClassList("app--photo");
+
+		if (currentTexture != null)
+		{
+			Destroy(currentTexture);
+			currentTexture = null;
+		}
+
+		// 저장해 둔 크롭 이미지 파일도 모두 삭제
+		DeleteOldCroppedImages(string.Empty);
+
+		PopupManager.Instance.WarningPopupCreate("기본 배경으로 바꿨어요");
+	}
+
+	#region 크롭 화면 꾸미기 (ImageCropper 플러그인은 그대로 두고 실행 중에 모양만 바꿈)
+
+	private static readonly Color32 cropNavy = new Color32(0x1F, 0x24, 0x33, 0xFF);
+	private static readonly Color32 cropCoral = new Color32(0xEC, 0x6B, 0x77, 0xFF);
+	private static readonly Color32 cropGhost = new Color32(0xF2, 0xF3, 0xF7, 0xFF);
+	private static readonly Color32 cropLine = new Color32(0xF6, 0xD3, 0xD8, 0xFF);
+	private static readonly Color32 cropSub = new Color32(0x9A, 0xA0, 0xAE, 0xFF);
+	private static readonly Color32 cropWell = new Color32(0xF5, 0xF6, 0xF9, 0xFF);
+
+	private void ApplyCropperSkin(ImageCropper cropper)
+	{
+		if (cropper == null || cropper == skinnedCropper)
+			return;
+
+		skinnedCropper = cropper;
+
+		try
+		{
+			Transform canvas = cropper.transform.Find("Canvas");
+			if (canvas == null)
+				return;
+
+			// 1) 배경: 합계 카드와 같은 네이비-플럼 그라데이션
+			SetGraphicColor(canvas, new Color32(0x1E, 0x1F, 0x2E, 0xFF));
+			if (cropperBackground != null)
+			{
+				UGUI.RawImage background = CreateUI<UGUI.RawImage>("ThemeBackground", canvas);
+				background.transform.SetSiblingIndex(0);
+				Stretch(background.rectTransform);
+				background.texture = cropperBackground;
+				background.raycastTarget = false;
+			}
+
+			// 2) 상단 바: 흰색 + 가운데 제목 + 작은 알약 버튼
+			Transform buttons = canvas.Find("Buttons");
+			if (buttons != null)
+			{
+				UGUI.Image bar = buttons.GetComponent<UGUI.Image>();
+				if (bar != null)
+				{
+					bar.sprite = null;
+					bar.color = Color.white;
+				}
+
+				UGUI.Image bottomLine = CreateUI<UGUI.Image>("BottomLine", buttons);
+				RectTransform lineRect = bottomLine.rectTransform;
+				lineRect.anchorMin = new Vector2(0f, 0f);
+				lineRect.anchorMax = new Vector2(1f, 0f);
+				lineRect.pivot = new Vector2(0.5f, 1f);
+				lineRect.sizeDelta = new Vector2(0f, 2f);
+				lineRect.anchoredPosition = Vector2.zero;
+				bottomLine.color = cropLine;
+				bottomLine.raycastTarget = false;
+
+				UGUI.Text title = CreateText("Title", buttons, "사진 자르기", cropperTitleFont, 24, cropNavy);
+				SetAnchors(title.rectTransform, new Vector2(0.3f, 0.42f), new Vector2(0.7f, 0.95f));
+				UGUI.Text subtitle = CreateText("Subtitle", buttons, "배경으로 보일 부분을 맞춰 주세요", cropperBodyFont, 14, cropSub);
+				SetAnchors(subtitle.rectTransform, new Vector2(0.3f, 0.1f), new Vector2(0.7f, 0.44f));
+
+				StyleCropButton(buttons.Find("CancelButton"), "취소", false);
+				StyleCropButton(buttons.Find("CropButton"), "적용", true);
+
+				// 3) 뒤집기/회전 버튼은 화면 아래 떠 있는 툴바로 옮김
+				Transform orientation = buttons.Find("OrientationButtons");
+				if (orientation != null)
+				{
+					BuildToolbar(canvas, orientation);
+				}
+			}
+
+			SetGraphicColor(canvas.Find("NotchBackground"), Color.white);
+
+			// 4) 선택 영역: 바깥은 네이비 톤으로 어둡게, 모서리는 코랄
+			Transform selection = canvas.Find("Viewport/SelectionGraphics");
+			if (selection != null)
+			{
+				Color fade = new Color(0.09f, 0.08f, 0.15f, 0.62f);
+				SetGraphicColor(selection.Find("FadeOverlay"), fade);
+				SetGraphicColor(selection.Find("OvalFadeOverlay"), fade);
+				SetGraphicColor(selection.Find("Borders"), new Color(1f, 1f, 1f, 0.95f));
+
+				Transform corners = selection.Find("Corners");
+				if (corners != null)
+				{
+					foreach (Transform corner in corners)
 					{
-						RectTransform imageRect = image.rectTransform;
-
-						// 가로를 세로로 나누어 목표 비율(Aspect Ratio)을 구합니다.
-						float targetRatio = imageRect.rect.width / imageRect.rect.height;
-
-						// 최소 비율과 최대 비율을 동일하게 설정하여 크롭 박스의 비율을 강제로 고정합니다.
-						cropperSettings.selectionMinAspectRatio = targetRatio;
-						cropperSettings.selectionMaxAspectRatio = targetRatio;
+						SetGraphicColor(corner, cropCoral);
 					}
+				}
 
-					ImageCropper.Instance.Show(texture, (bool result, Texture originalImage, Texture2D croppedImage) =>
+				Transform guidelines = selection.Find("Guidelines");
+				if (guidelines != null)
+				{
+					foreach (Transform guide in guidelines)
 					{
-						if (result && croppedImage != null)
-						{
-							byte[] bytes = croppedImage.EncodeToPNG();
-							string fileName = "cropped_image_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".png";
-							string savedPath = Path.Combine(Application.persistentDataPath, fileName);
+						SetGraphicColor(guide, new Color(1f, 1f, 1f, 0.45f));
+					}
+				}
+			}
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning($"크롭 화면 꾸미기 실패: {e.Message}");
+		}
+	}
 
-							File.WriteAllBytes(savedPath, bytes);
+	/// <summary>
+	/// 뒤집기/회전 버튼을 화면 아래 흰 알약 툴바로 옮기고 아이콘을 바꿉니다.
+	/// </summary>
+	private void BuildToolbar(Transform canvas, Transform orientation)
+	{
+		UGUI.Image toolbar = CreateUI<UGUI.Image>("ToolBar", canvas);
+		Transform viewport = canvas.Find("Viewport");
+		if (viewport != null)
+		{
+			toolbar.transform.SetSiblingIndex(viewport.GetSiblingIndex() + 1);
+		}
 
-							DataSet(croppedImage, savedPath);
-						}
-						Destroy(texture);
-					}, cropperSettings);
+		RectTransform rect = toolbar.rectTransform;
+		rect.anchorMin = new Vector2(0.5f, 0f);
+		rect.anchorMax = new Vector2(0.5f, 0f);
+		rect.pivot = new Vector2(0.5f, 0f);
+		rect.anchoredPosition = new Vector2(0f, 22f);
+
+		toolbar.sprite = pillSprite;
+		toolbar.type = pillSprite != null ? UGUI.Image.Type.Sliced : UGUI.Image.Type.Simple;
+		toolbar.color = new Color(1f, 1f, 1f, 0.96f);
+
+		UGUI.HorizontalLayoutGroup layout = toolbar.gameObject.AddComponent<UGUI.HorizontalLayoutGroup>();
+		layout.padding = new RectOffset(10, 10, 8, 8);
+		layout.spacing = 10f;
+		layout.childAlignment = TextAnchor.MiddleCenter;
+		layout.childControlWidth = true;
+		layout.childControlHeight = true;
+		layout.childForceExpandWidth = false;
+		layout.childForceExpandHeight = false;
+
+		UGUI.ContentSizeFitter fitter = toolbar.gameObject.AddComponent<UGUI.ContentSizeFitter>();
+		fitter.horizontalFit = UGUI.ContentSizeFitter.FitMode.PreferredSize;
+		fitter.verticalFit = UGUI.ContentSizeFitter.FitMode.PreferredSize;
+
+		string[] buttonNames = { "FlipHorizontalButton", "FlipVerticalButton", "RotateButton" };
+		Sprite[] icons = { iconFlipHorizontal, iconFlipVertical, iconRotate };
+
+		for (int i = 0; i < buttonNames.Length; i++)
+		{
+			Transform button = orientation.Find(buttonNames[i]);
+			if (button == null)
+				continue;
+
+			button.SetParent(toolbar.transform, false);
+
+			UGUI.LayoutElement element = button.GetComponent<UGUI.LayoutElement>();
+			if (element == null) element = button.gameObject.AddComponent<UGUI.LayoutElement>();
+			element.minWidth = 56f;
+			element.minHeight = 56f;
+			element.preferredWidth = 56f;
+			element.preferredHeight = 56f;
+
+			UGUI.Image buttonImage = button.GetComponent<UGUI.Image>();
+			if (buttonImage != null)
+			{
+				buttonImage.sprite = pillSprite;
+				buttonImage.type = pillSprite != null ? UGUI.Image.Type.Sliced : UGUI.Image.Type.Simple;
+				buttonImage.color = cropWell;
+			}
+
+			Transform iconTransform = button.Find("Image");
+			if (iconTransform != null)
+			{
+				UGUI.Image icon = iconTransform.GetComponent<UGUI.Image>();
+				if (icons[i] != null)
+				{
+					icon.sprite = icons[i];
+					icon.color = Color.white;
 				}
 				else
 				{
-					DataSet(texture, path);
+					icon.color = cropNavy;
 				}
+				icon.preserveAspect = true;
+				SetAnchors((RectTransform)iconTransform, new Vector2(0.1f, 0.1f), new Vector2(0.9f, 0.9f));
 			}
 		}
 	}
 
-	private void DataSet(Texture2D texture, string path)
-    {
-        string fileName = Path.GetFileName(path);
-        string fullPath = path;
-
-        PickTextureData data = new PickTextureData(texture, fileName, fullPath);
-
-        SetTexture(data);
-    }
-
-	public void SetTexture(PickTextureData result)
+	/// <summary>
+	/// 상단 취소/적용 버튼: 고정 크기 알약 + 아이콘 + 글자 (적용은 코랄 그라데이션 + 글로우)
+	/// </summary>
+	private void StyleCropButton(Transform button, string label, bool primary)
 	{
-		if (result != null && result.texture != null)
+		if (button == null)
+			return;
+
+		// 화면 폭과 상관없이 모양이 유지되도록 고정 크기로 배치
+		RectTransform rect = (RectTransform)button;
+		Vector2 side = primary ? new Vector2(1f, 0.5f) : new Vector2(0f, 0.5f);
+		rect.anchorMin = side;
+		rect.anchorMax = side;
+		rect.pivot = side;
+		rect.anchoredPosition = new Vector2(primary ? -22f : 22f, 0f);
+		rect.sizeDelta = new Vector2(134f, 46f);
+
+		// 원래 글자는 투명하게 두고 터치 영역으로만 사용
+		UGUI.Text sourceText = button.GetComponent<UGUI.Text>();
+		if (sourceText != null)
 		{
-			imagePath = result.fullPath;
+			sourceText.text = label;
+			sourceText.color = new Color(1f, 1f, 1f, 0f);
+		}
 
-			// 🚨 수정: 전체 경로(fullPath)가 아닌 파일 이름(fileName)만 저장합니다!
-			PlayerPrefs.SetString(imagePathKey, result.fileName);
-			PlayerPrefs.Save();
+		UGUI.Shadow shadow = button.GetComponent<UGUI.Shadow>();
+		if (shadow != null)
+		{
+			shadow.enabled = false;
+		}
 
-			// 1. 가로로 자연스럽게 이어지도록 반복(Repeat) 설정
-			result.texture.wrapMode = TextureWrapMode.Repeat;
-			image.texture = result.texture;
+		// 적용 버튼 뒤 코랄 글로우
+		if (primary && cropButtonGlow != null)
+		{
+			UGUI.Image glow = CreateUI<UGUI.Image>("Glow", button);
+			RectTransform glowRect = glow.rectTransform;
+			glowRect.anchorMin = Vector2.zero;
+			glowRect.anchorMax = Vector2.one;
+			glowRect.pivot = new Vector2(0.5f, 0.5f);
+			glowRect.sizeDelta = new Vector2(64f, 56f);
+			glowRect.anchoredPosition = new Vector2(0f, -5f);
+			glow.sprite = cropButtonGlow;
+			glow.color = new Color(0.93f, 0.42f, 0.47f, 0.5f);
+			glow.raycastTarget = false;
+		}
 
-			RectTransform imageRect = image.rectTransform;
+		// 알약 배경
+		UGUI.Image pill = CreateUI<UGUI.Image>("Pill", button);
+		Stretch(pill.rectTransform);
+		Sprite pillImage = primary ? cropButtonApply : cropButtonCancel;
+		if (pillImage != null)
+		{
+			pill.sprite = pillImage;
+			pill.color = Color.white;
+		}
+		else
+		{
+			pill.sprite = pillSprite;
+			pill.type = UGUI.Image.Type.Sliced;
+			pill.color = primary ? (Color)cropCoral : (Color)cropGhost;
+		}
+		pill.raycastTarget = false;
 
-			// 🚨 사이즈를 강제로 바꾸는 코드(sizeDelta 수정)를 삭제했습니다! 
-			// 대신 현재 UI가 에디터 설정에 맞춰 렌더링하고 있는 '실제 높이와 너비'만 가져옵니다.
-			float currentHeight = imageRect.rect.height;
-			float currentWidth = imageRect.rect.width;
+		Color contentColor = primary ? Color.white : (Color)cropNavy;
 
-			// 2. 현재 세로 길이를 기준으로, 원본 비율이 유지되는 '하나의 패턴 가로 길이'를 계산합니다.
-			float singlePatternWidth = result.texture.width * (currentHeight / result.texture.height);
+		// 아이콘 (취소: X, 적용: 체크)
+		Sprite iconSprite = primary ? cropIconCheck : cropIconClose;
+		if (iconSprite != null)
+		{
+			UGUI.Image icon = CreateUI<UGUI.Image>("Icon", button);
+			RectTransform iconRect = icon.rectTransform;
+			iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+			iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+			iconRect.pivot = new Vector2(0.5f, 0.5f);
+			iconRect.sizeDelta = new Vector2(20f, 20f);
+			iconRect.anchoredPosition = new Vector2(-23f, 0f);
+			icon.sprite = iconSprite;
+			icon.color = contentColor;
+			icon.preserveAspect = true;
+			icon.raycastTarget = false;
+		}
 
-			// 3. 실제 RawImage의 가로 전체 길이를 패턴 1개의 가로 길이로 나누어 줍니다.
-			// (가로 영역에 패턴이 몇 번 반복되어야 하는지 계산)
-			float tileX = currentWidth / singlePatternWidth;
+		// 글자
+		UGUI.Text text = CreateText("Label", button, label, cropperFont, 19, contentColor);
+		RectTransform textRect = text.rectTransform;
+		textRect.anchorMin = new Vector2(0.5f, 0.5f);
+		textRect.anchorMax = new Vector2(0.5f, 0.5f);
+		textRect.pivot = new Vector2(0.5f, 0.5f);
+		textRect.sizeDelta = new Vector2(60f, 30f);
+		textRect.anchoredPosition = new Vector2(iconSprite != null ? 11f : 0f, 1f);
 
-			// 4. 세로는 화면에 꽉 차게 1로 고정합니다.
-			float tileY = 1f;
-
-			// 5. 남는 가로 영역을 계산된 횟수만큼 패턴화(타일링)합니다.
-			image.uvRect = new Rect(0, 0, tileX, tileY);
+		// 누르면 살짝 어두워지는 효과
+		UGUI.Button uiButton = button.GetComponent<UGUI.Button>();
+		if (uiButton != null)
+		{
+			uiButton.targetGraphic = pill;
+			uiButton.transition = UGUI.Selectable.Transition.ColorTint;
+			UGUI.ColorBlock colors = uiButton.colors;
+			colors.normalColor = Color.white;
+			colors.highlightedColor = new Color(0.97f, 0.97f, 0.98f, 1f);
+			colors.pressedColor = new Color(0.85f, 0.85f, 0.88f, 1f);
+			colors.selectedColor = Color.white;
+			colors.fadeDuration = 0.08f;
+			uiButton.colors = colors;
 		}
 	}
 
-}
+	private static T CreateUI<T>(string name, Transform parent) where T : Component
+	{
+		GameObject go = new GameObject(name, typeof(RectTransform), typeof(T));
+		go.transform.SetParent(parent, false);
+		return go.GetComponent<T>();
+	}
 
+	private UGUI.Text CreateText(string name, Transform parent, string value, Font font, int size, Color color)
+	{
+		UGUI.Text text = CreateUI<UGUI.Text>(name, parent);
+		text.text = value;
+		text.font = font != null ? font : cropperFont;
+		text.fontSize = size;
+		text.color = color;
+		text.alignment = TextAnchor.MiddleCenter;
+		text.horizontalOverflow = HorizontalWrapMode.Overflow;
+		text.verticalOverflow = VerticalWrapMode.Overflow;
+		text.raycastTarget = false;
+		return text;
+	}
 
+	private static void SetAnchors(RectTransform rect, Vector2 min, Vector2 max)
+	{
+		rect.anchorMin = min;
+		rect.anchorMax = max;
+		rect.pivot = new Vector2(0.5f, 0.5f);
+		rect.anchoredPosition = Vector2.zero;
+		rect.sizeDelta = Vector2.zero;
+	}
 
-public class PickTextureData
-{
-    public Texture2D texture;
-    public string fileName;
-    public string fullPath;
+	private static void Stretch(RectTransform rect)
+	{
+		SetAnchors(rect, Vector2.zero, Vector2.one);
+	}
 
-    public PickTextureData(Texture2D texture,string fileName,string fullPath)
-    {
-        this.texture = texture;
-        this.fileName = fileName;
-        this.fullPath = fullPath;
-    }
+	private static void SetGraphicColor(Transform target, Color color)
+	{
+		if (target == null)
+			return;
+
+		UGUI.Graphic graphic = target.GetComponent<UGUI.Graphic>();
+		if (graphic != null)
+		{
+			graphic.color = color;
+		}
+	}
+
+	#endregion
+
+	private void OnDestroy()
+	{
+		if (currentTexture != null)
+		{
+			Destroy(currentTexture);
+		}
+	}
 }

@@ -1,235 +1,105 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
+﻿using UnityEngine.Events;
+using UnityEngine.UIElements;
 
-public class MacroItem : MonoBehaviour
+/// <summary>
+/// 매크로 목록의 한 줄 (UI Toolkit)
+/// </summary>
+public class MacroItem
 {
-    [SerializeField] Text titleText;
-    [SerializeField] Text contensText;
-	[SerializeField] RectTransform moveItem;
+	public VisualElement Root { get; private set; }
 
 	public MacroData macroData;
 
-    public UnityAction<MacroItem> CopyEventOn = data  => { };
-    public UnityAction<MacroItem> ChangeEventOn = data => { };
-    public UnityAction<MacroItem> DeleteEventOn = data => { };
+	public UnityAction<MacroItem> CopyEventOn = data => { };
+	public UnityAction<MacroItem> ChangeEventOn = data => { };
+	public UnityAction<MacroItem> DeleteEventOn = data => { };
 
-    private ScrollRect scrollRect;
+	private readonly Label titleText;
+	private readonly Label contensText;
 
-    private bool dragOn = false;
+	/// <summary> 목록 순서대로 돌아가며 쓰는 색 (보라/파랑/핑크/주황) </summary>
+	private static readonly string[] colorNames = { "purple", "blue", "pink", "orange" };
 
-	private Vector2 startPos = Vector2.zero;
-
-	public enum DirectionEnum
+	public MacroItem(MacroData macroData, int index = 0)
 	{
-		None,
-		/// <summary> 세로 </summary>
-		Vertical,
-		/// <summary> 가로 </summary>
-		Horizontal, 
+		string colorName = colorNames[((index % colorNames.Length) + colorNames.Length) % colorNames.Length];
+
+		Root = new VisualElement();
+		Root.AddToClassList("macro-item");
+		Root.AddToClassList("macro-item--" + colorName);
+
+		VisualElement textBox = new VisualElement();
+		textBox.AddToClassList("macro-text");
+
+		titleText = new Label();
+		titleText.AddToClassList("macro-title");
+		contensText = new Label();
+		contensText.AddToClassList("macro-content");
+
+		textBox.Add(titleText);
+		textBox.Add(contensText);
+
+		VisualElement actions = new VisualElement();
+		actions.AddToClassList("macro-actions");
+
+		Button changeBtn = new Button(ChangeBtnClick) { text = "편집" };
+		changeBtn.AddToClassList("btn");
+		changeBtn.AddToClassList("btn--soft");
+
+		Button deleteBtn = new Button(DeleteBtnClick) { text = "삭제" };
+		deleteBtn.AddToClassList("btn");
+		deleteBtn.AddToClassList("btn--soft");
+		deleteBtn.AddToClassList("btn--soft-danger");
+
+		actions.Add(changeBtn);
+		actions.Add(deleteBtn);
+
+		VisualElement icon = new VisualElement();
+		icon.AddToClassList("macro-icon");
+		icon.AddToClassList("macro-icon--" + colorName);
+		icon.pickingMode = PickingMode.Ignore;
+
+		Root.Add(icon);
+		Root.Add(textBox);
+		Root.Add(actions);
+
+		UIUtils.AddShadow(Root);
+
+		// 항목을 탭하면 복사
+		UIUtils.RegisterTap(Root, CopyBtnClick);
+
+		SetData(macroData);
 	}
 
-	private DirectionEnum directionEnum = DirectionEnum.None;
-
-	// Start is called before the first frame update
-	void Start()
-    {
-        InputDataChangeOn();
-    }
-
-    public void Init(ScrollRect scrollRect , float setWidth)
-    {
-		this.scrollRect = scrollRect;
-
-		RectTransform rect = transform as RectTransform;
-		Vector2 sizeDelta = rect.sizeDelta;
-		sizeDelta.x = setWidth;
-		rect.sizeDelta = sizeDelta;
-
-        SetEvent();
-	}
-
-	void SetEvent()
+	public void SetData(MacroData macroData)
 	{
-		EventTrigger eventTrigger = gameObject.AddComponent<EventTrigger>();
-
-		AddEvent(eventTrigger, EventTriggerType.BeginDrag,      (data) => OnBeginDrag((PointerEventData)data));
-		AddEvent(eventTrigger, EventTriggerType.Drag,           (data) => OnDrag((PointerEventData)data));
-		AddEvent(eventTrigger, EventTriggerType.EndDrag,        (data) => OnEndDrag((PointerEventData)data));
-		AddEvent(eventTrigger, EventTriggerType.PointerClick,   (data) => OnClick((PointerEventData)data));
-		AddEvent(eventTrigger, EventTriggerType.PointerDown,    (data) => OnPointerDown((PointerEventData)data));
-		AddEvent(eventTrigger, EventTriggerType.PointerUp,      (data) => OnPointerUp((PointerEventData)data));
+		this.macroData = macroData;
+		InputDataChangeOn();
 	}
 
-	private void AddEvent(EventTrigger trigger, EventTriggerType eventType, System.Action<BaseEventData> action)
+	public void CopyBtnClick()
 	{
-		EventTrigger.Entry entry = new EventTrigger.Entry();
-		entry.eventID = eventType;
-		entry.callback.AddListener(action.Invoke);
-		trigger.triggers.Add(entry);
+		CopyEventOn(this);
 	}
 
-	private void OnBeginDrag(PointerEventData eventData)
+	public void ChangeBtnClick()
 	{
-		dragOn = true;
-
-		scrollRect.OnBeginDrag(eventData);
-
-		startPos = eventData.position;
+		ChangeEventOn(this);
 	}
-	private void OnDrag(PointerEventData eventData)
+
+	public void DeleteBtnClick()
 	{
-		if (directionEnum == DirectionEnum.None) 
-		{
-			CheckDirection(eventData);
-			return;
-		}
-
-		if (directionEnum == DirectionEnum.Vertical)
-		{
-			scrollRect.OnDrag(eventData);
-		}
-		else if (directionEnum == DirectionEnum.Horizontal)
-		{
-			MoveItemAddPos(eventData);
-		}
+		DeleteEventOn(this);
 	}
 
-	private void CheckDirection(PointerEventData eventData)
+	public void InputDataChangeOn()
 	{
-		Vector2 diff = eventData.position - startPos;
+		bool emptyTitle = macroData == null || string.IsNullOrEmpty(macroData.title);
+		bool emptyContens = macroData == null || string.IsNullOrEmpty(macroData.contens);
 
-		float checkXValue = Mathf.Abs(diff.x);
-		float checkYValue = Mathf.Abs(diff.y);
+		titleText.text = emptyTitle ? "제목 없음" : macroData.title;
+		contensText.text = emptyContens ? "내용 없음" : macroData.contens;
 
-		if (checkXValue > checkYValue && checkXValue > 10 && checkYValue < 3)
-		{
-			directionEnum = DirectionEnum.Horizontal;
-		}
-		else if (checkXValue < checkYValue && checkYValue > 10)
-		{
-			directionEnum = DirectionEnum.Vertical;
-		}
+		Root.EnableInClassList("macro-item--empty", emptyTitle && emptyContens);
 	}
-
-	private void MoveItemAddPos(PointerEventData eventData)
-	{
-		Vector3 currentPos = moveItem.anchoredPosition3D;
-		currentPos.x += eventData.delta.x;
-		currentPos.x = Mathf.Clamp(currentPos.x, -550, 550);
-		moveItem.anchoredPosition3D = currentPos;
-	}
-
-	private void OnEndDrag(PointerEventData eventData)
-	{
-		dragOn = false;
-
-		DirectionEnumResultOn();
-
-		scrollRect.OnEndDrag(eventData);
-	}
-
-	private void DirectionEnumResultOn()
-	{
-		if (directionEnum == DirectionEnum.Horizontal) 
-		{
-			float posX = moveItem.anchoredPosition3D.x;
-
-			if (posX > 500)
-			{
-				ChangeBtnClick();
-			}
-			else if (posX < -500)
-			{
-				DeleteBtnClick();
-			}
-
-			moveItem.anchoredPosition3D = Vector3.zero;
-		}
-
-
-		directionEnum = DirectionEnum.None;
-	}
-
-
-	private void OnClick(PointerEventData eventData)
-	{
-        if (dragOn == false )
-        {
-			CopyBtnClick();
-		}
-	}
-	private void OnPointerDown(PointerEventData eventData)
-	{
-		directionEnum = DirectionEnum.None;
-		moveItem.anchoredPosition3D = Vector3.zero;
-	}
-	private void OnPointerUp(PointerEventData eventData)
-	{
-	}
-
-
-	// Update is called once per frame
-	void Update()
-    {
-    }
-
-    public void SetData(MacroData macroData)
-    {
-        this.macroData = macroData;
-	}
-
-    public void CopyBtnClick()
-    {
-        CopyEventOn(this);
-    }
-    public void ChangeBtnClick()
-    {
-        ChangeEventOn(this);
-    }
-
-    public void DeleteBtnClick()
-    {
-        DeleteEventOn(this);
-    }
-
-    public void TitleStrChangeOn(string str)
-    {
-        macroData.title = str;
-
-        MacroManager.Instance.ResetMacroData(macroData);
-        InputDataChangeOn();
-    }
-
-    public void ContensStrChangeOn(string str)
-    {
-        macroData.contens = str;
-        MacroManager.Instance.ResetMacroData(macroData);
-        InputDataChangeOn();
-    }
-
-
-    public void InputDataChangeOn()
-    {
-        if (macroData == null || string.IsNullOrEmpty(macroData.title))
-        {
-            titleText.text = "제목";
-        }
-        else
-        {
-            titleText.text = macroData.title;
-        }
-
-        if (macroData == null || string.IsNullOrEmpty(macroData.contens))
-        {
-            contensText.text = "내용";
-        }
-        else
-        {
-            contensText.text = macroData.contens;
-        }
-    }
 }

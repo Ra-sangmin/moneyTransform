@@ -1,0 +1,203 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Style src="project://database/Assets/UI/Main.uss" />
+    <ui:VisualElement name="app" class="app">
+        <!-- 배경 (사용자 사진) -->
+        <ui:VisualElement name="bg" picking-mode="Ignore" class="fill bg" />
+        <ui:VisualElement name="bg-scrim" picking-mode="Ignore" class="fill bg-scrim" />
+
+        <!-- 메인 화면 -->
+        <ui:VisualElement picking-mode="Ignore" class="fill safe-pad">
+            <ui:VisualElement class="main">
+                <ui:VisualElement class="topbar">
+                    <ui:VisualElement class="brand">
+                        <ui:VisualElement class="brand-row">
+                            <ui:Label text="미쿠짱" class="brand-name" />
+                            <ui:Label text="견적 계산기" class="brand-app" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="status-pill">
+                            <ui:VisualElement name="status-dot" class="status-dot" />
+                            <ui:Label name="rate-updated" text="환율 불러오는 중…" class="status-text" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="nav-pill">
+                        <ui:Button name="macro-btn" class="nav-btn">
+                            <ui:VisualElement picking-mode="Ignore" class="icon-sm icon--msg" />
+                            <ui:Label text="매크로" picking-mode="Ignore" class="nav-label" />
+                        </ui:Button>
+                        <ui:Button name="bg-btn" class="nav-btn">
+                            <ui:VisualElement picking-mode="Ignore" class="icon-sm icon--image" />
+                            <ui:Label text="배경 사진" picking-mode="Ignore" class="nav-label" />
+                        </ui:Button>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="columns">
+                    <!-- 왼쪽: 환율 + 견적 입력 -->
+                    <ui:VisualElement class="col col--left">
+                        <ui:VisualElement name="rate-card" class="card rate-card card--rate">
+                            <ui:VisualElement class="card-head">
+                                <ui:VisualElement class="icon-tile icon--rate" />
+                                <ui:VisualElement class="card-titles">
+                                    <ui:Label text="엔화 환율" class="card-title" />
+                                    <ui:Label text="100엔 기준 · 탭하여 새로고침" class="card-sub" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="value-row">
+                                <ui:Label name="exchange-rate" text="—" class="rate-value" />
+                                <ui:Label text="원" class="value-unit" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="rate-breakdown" class="rate-breakdown" style="display: none;">
+                                <ui:Label name="rate-base" text="기준 0" class="rate-chip" />
+                                <ui:Label text="+" class="rate-op" />
+                                <ui:Label name="rate-add" text="추가 0" class="rate-chip rate-chip--add" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="card form-card card--quote">
+                            <ui:VisualElement class="card-head">
+                                <ui:VisualElement class="icon-tile icon--quote" />
+                                <ui:VisualElement class="card-titles">
+                                    <ui:Label text="견적 입력" class="card-title" />
+                                    <ui:Label text="상품 금액과 수수료를 엔화로 입력하세요" class="card-sub" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="form-row">
+                                <ui:Label text="추가 증가액" class="row-label" />
+                                <ui:TextField name="add-rate" value="0" class="field field--num" />
+                                <ui:Label text="원" class="row-unit" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="form-row form-row--divider">
+                                <ui:Label text="상품가격" class="row-label" />
+                                <ui:TextField name="sale-price" class="field field--num" />
+                                <ui:Label text="엔" class="row-unit" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="form-row form-row--divider">
+                                <ui:Label text="결제수수료" class="row-label" />
+                                <ui:TextField name="payment" class="field field--num" />
+                                <ui:Label text="엔" class="row-unit" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="form-row form-row--divider">
+                                <ui:Label text="일내배송료" class="row-label" />
+                                <ui:TextField name="daily-tax" class="field field--num" />
+                                <ui:Label text="엔" class="row-unit" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- 오른쪽: 대행수수료 + 추가문구 + 합계 -->
+                    <ui:VisualElement class="col">
+                        <ui:VisualElement class="card fee-card card--fee">
+                            <ui:VisualElement class="icon-tile icon--fee" />
+                            <ui:VisualElement class="card-titles fee-titles">
+                                <ui:Label text="대행수수료" class="card-title" />
+                                <ui:VisualElement class="value-row fee-value-row">
+                                    <ui:Label name="tex-count" text="300" class="fee-value" />
+                                    <ui:Label text="엔" class="value-unit value-unit--sm" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="stepper-wrap">
+                                <ui:Label text="수량" class="stepper-label" />
+                                <ui:VisualElement class="stepper">
+                                    <ui:Button name="qty-down" text="−" class="step-btn" />
+                                    <ui:Label name="quantity" text="1" class="qty-value" />
+                                    <ui:Button name="qty-up" text="+" class="step-btn" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="card form-card msg-card card--msg">
+                            <ui:VisualElement class="card-head">
+                                <ui:VisualElement class="icon-tile icon--msg" />
+                                <ui:VisualElement class="card-titles">
+                                    <ui:Label text="추가 문구" class="card-title" />
+                                    <ui:Label text="매크로의 {추가문구1}, {추가문구2} 자리에 들어가요" class="card-sub" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="form-row form-row--text">
+                                <ui:Label text="문구 1" class="row-label" />
+                                <ui:TextField name="add-string-0" class="field field--text" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="form-row form-row--text form-row--divider">
+                                <ui:Label text="문구 2" class="row-label" />
+                                <ui:TextField name="add-string-1" class="field field--text" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="result-card" class="result-card">
+                            <ui:VisualElement class="card-head result-head">
+                                <ui:VisualElement class="icon-tile icon--total" />
+                                <ui:VisualElement class="card-titles">
+                                    <ui:Label text="최종 견적" class="result-title" />
+                                    <ui:Label text="환율과 수수료가 모두 반영된 금액" class="result-sub" />
+                                </ui:VisualElement>
+                                <ui:VisualElement class="result-actions">
+                                    <ui:Button name="calc-btn" text="계산 과정 보기" class="calc-btn" />
+                                    <ui:Label name="result-hint" text="탭하여 복사" class="result-hint" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="result-value-row">
+                                <ui:Label name="result-count" text="—" class="result-value" />
+                                <ui:Label text="원" class="result-unit" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 매크로 목록 화면 -->
+        <ui:VisualElement name="macro-screen" class="screen" style="display: none;">
+            <ui:VisualElement class="fill safe-pad">
+                <ui:VisualElement class="screen-inner">
+                    <ui:VisualElement class="screen-header">
+                        <ui:Button name="macro-back" text="‹  돌아가기" class="btn btn--outline" />
+                        <ui:VisualElement class="icon-tile icon--msg screen-icon" />
+                        <ui:VisualElement class="screen-titles">
+                            <ui:VisualElement class="title-row">
+                                <ui:Label text="매크로" class="screen-title" />
+                                <ui:Label name="macro-count" text="0개" class="count-chip" />
+                            </ui:VisualElement>
+                            <ui:Label text="탭하면 값이 채워진 문구가 복사돼요" class="screen-sub" />
+                        </ui:VisualElement>
+                        <ui:Button name="macro-add" text="+  새 매크로" class="btn btn--primary" />
+                    </ui:VisualElement>
+                    <ui:ScrollView name="macro-list" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Hidden" class="macro-list" />
+                    <ui:VisualElement name="macro-empty" class="card empty-card" style="display: none;">
+                        <ui:VisualElement class="icon-tile icon--msg empty-icon" />
+                        <ui:Label text="아직 저장된 매크로가 없어요" class="empty-title" />
+                        <ui:Label text="자주 보내는 안내 문구를 등록해 두면 탭 한 번으로 복사할 수 있어요.&#10;{상품가격}, {합계} 같은 자리는 계산 값으로 자동으로 채워져요." class="empty-sub" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 매크로 편집 화면 -->
+        <ui:VisualElement name="edit-screen" class="screen" style="display: none;">
+            <ui:VisualElement class="fill safe-pad">
+                <ui:VisualElement class="screen-inner">
+                    <ui:VisualElement class="screen-header">
+                        <ui:Button name="edit-done" text="‹  완료" class="btn btn--outline" />
+                        <ui:VisualElement class="icon-tile icon--edit screen-icon" />
+                        <ui:VisualElement class="screen-titles">
+                            <ui:Label text="매크로 편집" class="screen-title" />
+                            <ui:Label text="입력한 내용은 바로 저장돼요" class="screen-sub" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="card edit-card card--edit">
+                        <ui:Label text="제목" class="field-label" />
+                        <ui:TextField name="edit-title" class="field field--text field--title" />
+                        <ui:Label text="내용" class="field-label" />
+                        <ui:TextField name="edit-content" multiline="true" class="field field--area" />
+                        <ui:VisualElement class="token-bar">
+                            <ui:Label text="자동 입력" class="token-label" />
+                            <ui:VisualElement name="token-row" class="token-row" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 팝업/토스트 레이어 -->
+        <ui:VisualElement name="popup-layer" picking-mode="Ignore" class="fill" />
+    </ui:VisualElement>
+</ui:UXML>

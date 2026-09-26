@@ -1,28 +1,43 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using DG.Tweening;
+﻿using System.Collections.Generic;
+using UnityEngine.UIElements;
 
-public class WarningPopup : MonoBehaviour
+/// <summary>
+/// 잠깐 떴다 사라지는 알림 (UI Toolkit 토스트)
+/// </summary>
+public class WarningPopup
 {
-    [SerializeField] Text contensText;
+	public VisualElement Root { get; private set; }
 
-    public void DataSet(string contensStr)
-    {
-        contensText.text = contensStr;
+	private readonly Label contensText;
 
-        //위치 이동
-        RectTransform rectObj = contensText.GetComponent<RectTransform>();
-        float targetYPos = rectObj.anchoredPosition3D.y;
-        rectObj
-            .DOAnchorPosY(targetYPos + 50, 1)
-            .SetDelay(1);
+	public WarningPopup(VisualElement layer)
+	{
+		// 이전 알림이 남아 있으면 바로 지웁니다.
+		List<VisualElement> oldToasts = layer.Query<VisualElement>(className: "toast-wrap").ToList();
+		foreach (VisualElement oldToast in oldToasts)
+		{
+			oldToast.RemoveFromHierarchy();
+		}
 
-        //알파 조정
-        contensText
-            .DOFade(0, 1f)
-            .SetDelay(1)
-            .OnComplete(()=>Destroy(gameObject));
-    }
+		Root = new VisualElement();
+		Root.AddToClassList("toast-wrap");
+		Root.pickingMode = PickingMode.Ignore;
+
+		contensText = new Label();
+		contensText.AddToClassList("toast");
+		contensText.pickingMode = PickingMode.Ignore;
+
+		Root.Add(contensText);
+		layer.Add(Root);
+	}
+
+	public void DataSet(string contensStr)
+	{
+		contensText.text = contensStr;
+
+		// 나타남 → 1.6초 후 위로 사라짐 → 제거
+		Root.schedule.Execute(() => Root.AddToClassList("toast-wrap--show")).StartingIn(16);
+		Root.schedule.Execute(() => Root.AddToClassList("toast-wrap--hide")).StartingIn(1600);
+		Root.schedule.Execute(() => Root.RemoveFromHierarchy()).StartingIn(2300);
+	}
 }

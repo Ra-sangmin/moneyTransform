@@ -1,170 +1,131 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
+﻿using UnityEngine.Events;
+using UnityEngine.UIElements;
 
-public class OkPopup : MonoBehaviour
+/// <summary>
+/// 예/아니오 확인 팝업 (UI Toolkit)
+/// </summary>
+public class OkPopup
 {
-    [SerializeField] Text contensText;
-    [SerializeField] Text okBtnText;
-    [SerializeField] Text cancelBtnText;
+	public VisualElement Root { get; private set; }
 
-    [SerializeField] RectTransform okBtnRect;
+	private readonly Label contensText;
+	private readonly VisualElement dangerIcon;
+	private readonly Button okBtn;
+	private readonly Button cancelBtn;
 
-    UnityAction okBtnClickEvent;
-    UnityAction cancelBtnClickEvent;
-    UnityAction destoryBtnClickEvent;
+	private UnityAction okBtnClickEvent;
+	private UnityAction cancelBtnClickEvent;
 
-    bool clickOn = false;
-    float clickDelay = 1;
+	/// <summary> 연타 방지 (뜬 직후 잠깐은 클릭 무시) </summary>
+	private bool clickOn = false;
 
-    bool maskClickDestoryOn = false;
+	private bool maskClickDestoryOn = false;
 
-    enum BtnKind
-    {
-        okOnlyBtn,
-        okBtn,
-        cancelBtn
-    }
-    
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+	public OkPopup(VisualElement layer)
+	{
+		Root = new VisualElement();
+		Root.AddToClassList("modal-scrim");
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (clickOn == false)
-        {
-            clickDelay -= Time.deltaTime;
-            if (clickDelay < 0)
-            {
-                clickOn = true;
-                clickDelay = 0.5f;
-            }
-        }
-    }
+		VisualElement card = new VisualElement();
+		card.AddToClassList("modal");
 
-    public void DataSet(string contensStr, UnityAction okBtnClickEvent , UnityAction cancelBtnClickEvent , bool okBtnOnly , bool maskClickDestoryOn, string okBtnStr , string cancelBtnStr )
-    {
-        this.okBtnClickEvent = okBtnClickEvent;
-        this.cancelBtnClickEvent = cancelBtnClickEvent;
+		dangerIcon = new VisualElement();
+		dangerIcon.AddToClassList("icon-tile");
+		dangerIcon.AddToClassList("icon--trash");
+		dangerIcon.AddToClassList("modal-icon");
+		dangerIcon.pickingMode = PickingMode.Ignore;
 
-        this.maskClickDestoryOn = maskClickDestoryOn;
+		contensText = new Label();
+		contensText.AddToClassList("modal-message");
 
-        contensText.text = contensStr;
+		VisualElement actions = new VisualElement();
+		actions.AddToClassList("modal-actions");
 
-        cancelBtnText.gameObject.SetActive(!okBtnOnly);
+		cancelBtn = new Button(CancelBtnClick);
+		cancelBtn.AddToClassList("btn");
+		cancelBtn.AddToClassList("btn--ghost");
 
-        okBtnText.text = okBtnStr;
-        cancelBtnText.text = cancelBtnStr;
+		okBtn = new Button(OkBtnClick);
+		okBtn.AddToClassList("btn");
 
-        //if (okBtnOnly)
-        //{
-        //    okBtnRect.offsetMin = new Vector2(0, okBtnRect.offsetMin.y);
-            
-        //}
-        //else
-        //{
-        //    if (string.IsNullOrEmpty(okBtnStr))
-        //    {
-        //        okBtnStr = GetBtnStrKey(BtnKind.okBtn);
-        //    }
-            
-        //    if (string.IsNullOrEmpty(cancelBtnStr))
-        //    {
-        //        cancelBtnStr = GetBtnStrKey(BtnKind.cancelBtn);
-        //    }
+		actions.Add(cancelBtn);
+		actions.Add(okBtn);
 
-        //    okBtnText.text = okBtnStr;
-        //    cancelBtnText.text = cancelBtnStr;
-        //}
+		UIUtils.AddShadow(card);
+		card.Add(dangerIcon);
+		card.Add(contensText);
+		card.Add(actions);
+		Root.Add(card);
 
-        clickOn = false;
-        clickDelay = 0.5f;
-    }
+		// 카드 바깥(어두운 배경)을 누른 경우
+		Root.RegisterCallback<ClickEvent>(evt =>
+		{
+			if (evt.target == Root)
+			{
+				MaskClick();
+			}
+		});
 
-    private string GetBtnStrKey(BtnKind btnKind)
-    {
-        string resultKey = string.Empty;
+		layer.Add(Root);
 
-#if UNITY_WEBGL
-        switch (btnKind)
-        {
-            case BtnKind.okOnlyBtn : resultKey = "key_42"; break;
-            case BtnKind.okBtn :     resultKey = "key_33"; break;
-            case BtnKind.cancelBtn : resultKey = "key_32"; break;
-        }
-#else
-        switch (btnKind)
-        {
-            case BtnKind.okOnlyBtn : resultKey = "key_5"; break;
-            case BtnKind.okBtn :     resultKey = "key_4"; break;
-            case BtnKind.cancelBtn : resultKey = "key_3"; break;
-        }
-#endif
+		// 등장 애니메이션 + 연타 방지
+		Root.schedule.Execute(() => Root.AddToClassList("modal-scrim--show")).StartingIn(16);
+		Root.schedule.Execute(() => clickOn = true).StartingIn(300);
+	}
 
-        return resultKey;
-    }
+	public void DataSet(string contensStr, UnityAction okBtnClickEvent, UnityAction cancelBtnClickEvent, bool okBtnOnly, bool maskClickDestoryOn, string okBtnStr, string cancelBtnStr, bool danger = false)
+	{
+		this.okBtnClickEvent = okBtnClickEvent;
+		this.cancelBtnClickEvent = cancelBtnClickEvent;
+		this.maskClickDestoryOn = maskClickDestoryOn;
 
-    //void BtnTextSet(Text text , string str)
-    //{
-    //    string resultStr = LocalizeManager.Instance.GetStrData(str);
+		contensText.text = contensStr;
 
-    //    if (resultStr == string.Empty)
-    //    {
-    //        resultStr = str;
-    //    }
+		UIUtils.SetVisible(cancelBtn, !okBtnOnly);
 
-    //    text.text = resultStr;
-    //}
+		okBtn.text = okBtnStr;
+		cancelBtn.text = cancelBtnStr;
 
+		UIUtils.SetVisible(dangerIcon, danger);
 
-    public void OkBtnClick()
-    {
-        if (clickOn == false)
-            return;
-        
-        if (okBtnClickEvent != null)
-        {
-            okBtnClickEvent();
-        }
-        DestroyPopup();
-    }
-    public void CancelBtnClick()
-    {
-        if (clickOn == false)
-            return;
+		okBtn.EnableInClassList("btn--danger", danger);
+		okBtn.EnableInClassList("btn--primary", !danger);
+	}
 
-        if (cancelBtnClickEvent != null)
-        {
-            cancelBtnClickEvent();
-        }
-        DestroyPopup();
-    }
+	public void OkBtnClick()
+	{
+		if (clickOn == false)
+			return;
 
-    public void MaskClick()
-    {
-        if (clickOn == false)
-            return;
+		okBtnClickEvent?.Invoke();
+		DestroyPopup();
+	}
 
-        if (maskClickDestoryOn == false)
-        {
-            if (cancelBtnClickEvent != null)
-            {
-                cancelBtnClickEvent();
-            }
-        }
-        
-        DestroyPopup();
-    }
+	public void CancelBtnClick()
+	{
+		if (clickOn == false)
+			return;
 
-    void DestroyPopup()
-    {
-        Destroy(gameObject);
-    }
+		cancelBtnClickEvent?.Invoke();
+		DestroyPopup();
+	}
 
+	public void MaskClick()
+	{
+		if (clickOn == false)
+			return;
+
+		if (maskClickDestoryOn == false)
+		{
+			cancelBtnClickEvent?.Invoke();
+		}
+
+		DestroyPopup();
+	}
+
+	void DestroyPopup()
+	{
+		clickOn = false;
+		Root.RemoveFromHierarchy();
+	}
 }

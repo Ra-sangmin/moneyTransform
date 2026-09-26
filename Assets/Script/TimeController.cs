@@ -27,7 +27,7 @@ public class TimeController : MonoBehaviour {
 			if(minuteValue >= 5)
 			{
 				minuteValue = 0;
-				timeOn ();
+				timeOn?.Invoke();
 			}
 		}
 	}
