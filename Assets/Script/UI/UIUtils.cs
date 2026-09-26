@@ -256,12 +256,24 @@ public static class UIUtils
 			dragging = false;
 		});
 
-		// 휠을 굴리면 미끄러짐을 멈추고, 넘친 부분은 되돌림
-		scrollView.RegisterCallback<WheelEvent>(_ =>
+		// 마우스 휠 / 맥북 트랙패드(두 손가락) 스크롤은 직접 처리:
+		// - ScrollView 기본 처리는 끝에서 튕기려다(Elastic) 트랙패드의 연속 입력과 부딪혀 마구 떨리므로
+		//   항상 범위 안으로만 움직이게 함
+		// - 트랙패드는 작은 값이 아주 자주 들어오므로 1단위당 이동량을 작게 잡음
+		const float wheelStep = 18f;
+		scrollView.RegisterCallback<WheelEvent>(evt =>
 		{
 			velocity = 0f;
 			if (Mathf.Abs(overscroll) >= 0.5f)
 				StartAnimation();
+
+			float max = GetMaxScrollY(scrollView);
+			float y = Mathf.Clamp(scrollView.scrollOffset.y + evt.delta.y * wheelStep, 0f, max);
+			if (!Mathf.Approximately(y, scrollView.scrollOffset.y))
+				scrollView.scrollOffset = new Vector2(scrollView.scrollOffset.x, y);
+
+			// ScrollView 기본 휠 처리(범위 밖으로 튕기는 동작)는 막음
+			evt.StopImmediatePropagation();
 		}, TrickleDown.TrickleDown);
 
 		// 펼치기/접기 등으로 내용 높이가 바뀌면 범위 안으로 되돌림

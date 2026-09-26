@@ -43,7 +43,6 @@ public class MacroPopup
 		// 터치는 물론 마우스로 끌어도 스크롤되도록
 		// 휴대폰 터치: 끝에서 늘어났다가 손을 떼면 돌아옴 (마우스는 UIUtils.EnableDragScroll 이 같은 동작을 함)
 		macroList.touchScrollBehavior = ScrollView.TouchScrollBehavior.Elastic;
-		macroList.mouseWheelScrollSize = 60f;
 		UIUtils.EnableDragScroll(macroList);
 		emptyCard = root.Q<VisualElement>("macro-empty");
 		countLabel = root.Q<Label>("macro-count");
