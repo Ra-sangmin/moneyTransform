@@ -155,7 +155,8 @@ public class GetImageController : MonoBehaviour
 		if (path == null)
 			return;
 
-		Texture2D texture = NativeGallery.LoadImageAtPath(path, 2048);
+		// 고해상도 화면(태블릿·맥북 레티나)에서도 선명하도록 원본을 최대 3072px까지 불러옴
+		Texture2D texture = NativeGallery.LoadImageAtPath(path, 3072);
 		if (texture == null)
 		{
 			Debug.Log("Couldn't load texture from " + path);
@@ -173,6 +174,9 @@ public class GetImageController : MonoBehaviour
 
 		// 2. 스크립트가 읽을 수 있도록 잠금을 해제합니다.
 		cropperSettings.markTextureNonReadable = false;
+
+		// 선택 영역을 픽셀 단위로 맞춰서 잘라낸 사진이 번지지(흐려지지) 않게
+		cropperSettings.pixelPerfectSelection = true;
 
 		// 3. 실제 배경 영역의 가로세로 비율로 크롭 박스를 고정합니다.
 		if (bgElement != null)
